@@ -230,7 +230,7 @@ def monomer_pdb_filtering(_pdb,_dir):
 
     return chain_finder
 
-def chain_pdb_combination_generator(_stoi,chains):
+def chain_pdb_combination_generator(_stoi,chains,_fasta_stoic_dict):
     stoi_repeat_dict = {}
     stoi_chain_map_dict = {}
     counter = 0
@@ -249,14 +249,17 @@ def chain_pdb_combination_generator(_stoi,chains):
             stoi_repeat_dict[only_chain_string[counter]]=int(values)
             total_subunits = total_subunits+int(values)
             counter = counter+1
-
+    unique_counter = 0
     while len(chains) >0 :
         for val in stoi_repeat_dict:
             # print(val)
             if not val in stoi_chain_map_dict:
-                stoi_chain_map_dict[val] = [chains[0]]
+                # stoi_chain_map_dict[val] = [_fasta_stoic_dict[str(unique_counter)],chains[0]]
+                stoi_chain_map_dict[val] = [_fasta_stoic_dict[str(unique_counter)],chains[0]]
                 stoi_repeat_dict[val] = int(stoi_repeat_dict[val]) - 1
                 del chains[0]
+                _fasta_stoic_dict.pop(str(unique_counter))
+                unique_counter=unique_counter+1
             else:
                 if  stoi_repeat_dict[val]  != 0:
                     stoi_chain_map_dict[val].append(chains[0])
@@ -272,8 +275,9 @@ def chain_pdb_combination_generator(_stoi,chains):
 
 # def fasta_to_chain_mapper(_fasta_file="/home/rajroy/H1060.txt",chains=,_stoichemity=):
 def fasta_to_chain_mapper(_fasta_file="/home/rajroy/H1060.fasta",_stoi="A6B3C12D6",chains=["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","I","Q","R","S","T","U","V","W","X","Y","Z","a"]):
-    chain_mapper = chain_pdb_combination_generator(_stoi,chains)
-    fasta_stoic_dict = multi_fasta_reader(_seq_file=_fasta_file )
+    fasta_stoic_dict = multi_fasta_reader(_seq_file=_fasta_file)
+    chain_mapper = chain_pdb_combination_generator(_stoi,chains,fasta_stoic_dict)
+
 
     return None
 
