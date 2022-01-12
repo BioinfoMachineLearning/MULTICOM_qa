@@ -1,6 +1,6 @@
 import copy
 import os
-
+import re
 
 def get_stoichiometry_details(_stoi):
     details = {}
@@ -194,6 +194,24 @@ def get_unique_chains(_inp_details):
         chain_array.append(val.chain)
     return list(dict.fromkeys(chain_array))
 
+def multi_fasta_reader(_seq_file):
+    file = open(_seq_file, "r")
+    stoi_fasta_dict={}
+    output_array = []
+    if file.mode == 'r':
+        output_array = file.read().strip().splitlines()
+        file.close()
+    counter = 0
+    temp_name = ""
+    for values in output_array:
+        print(str(counter)+" "+values)
+        if counter %2==1:
+            stoi_fasta_dict[temp_name] =values
+        else:
+            temp_name = str(int(counter/2))
+        counter =counter+1
+
+    return stoi_fasta_dict
 
 def monomer_pdb_filtering(_pdb,_dir):
     tar_name = os.path.basename(_pdb)
@@ -211,3 +229,52 @@ def monomer_pdb_filtering(_pdb,_dir):
         # convert_to_pdb(_pdb=monomer_string,_name=tar_monomer_file)
 
     return chain_finder
+
+def chain_pdb_combination_generator(_stoi,chains):
+    stoi_repeat_dict = {}
+    stoi_chain_map_dict = {}
+    counter = 0
+    temp_value = ""
+    string1 = _stoi
+    pattern = r'[0-9]'
+    only_chain_string = re.sub(pattern, '', string1)
+
+    string2 = _stoi
+    pattern = r'[A-Za-z]'
+    only_subunits = re.sub(pattern, ',', string2)
+    total_subunits = 0
+    counter = 0
+    for values in only_subunits.split(","):
+        if values.strip() != "":
+            stoi_repeat_dict[only_chain_string[counter]]=int(values)
+            total_subunits = total_subunits+int(values)
+            counter = counter+1
+
+    while len(chains) >0 :
+        for val in stoi_repeat_dict:
+            # print(val)
+            if not val in stoi_chain_map_dict:
+                stoi_chain_map_dict[val] = [chains[0]]
+                stoi_repeat_dict[val] = int(stoi_repeat_dict[val]) - 1
+                del chains[0]
+            else:
+                if  stoi_repeat_dict[val]  != 0:
+                    stoi_chain_map_dict[val].append(chains[0])
+                    print(chains[0])
+                    stoi_repeat_dict[val] =  int(stoi_repeat_dict[val])-1
+                    del chains[0]
+            # if    stoi_repeat_dict[val] ==0:
+            #     stoi_repeat_dict.pop(val)
+
+    return stoi_chain_map_dict
+
+
+
+# def fasta_to_chain_mapper(_fasta_file="/home/rajroy/H1060.txt",chains=,_stoichemity=):
+def fasta_to_chain_mapper(_fasta_file="/home/rajroy/H1060.fasta",_stoi="A6B3C12D6",chains=["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","I","Q","R","S","T","U","V","W","X","Y","Z","a"]):
+    chain_mapper = chain_pdb_combination_generator(_stoi,chains)
+    fasta_stoic_dict = multi_fasta_reader(_seq_file=_fasta_file )
+
+    return None
+
+fasta_to_chain_mapper()
