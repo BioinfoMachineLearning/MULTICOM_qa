@@ -1,10 +1,11 @@
 import copy
 import os
 import re
+import numpy as np
 
 
 class multimer:
-    unique_monomers_chain =[]
+    unique_monomers_chain = []
     chains = [],
     chain_fasta = {},
     stoi = [],
@@ -12,6 +13,7 @@ class multimer:
     scores = {}
 
     pass
+
 
 def write2File(_filename, _cont):
     with open(_filename, "w") as f:
@@ -55,6 +57,23 @@ def convert_to_pdb(_pdb, _name):
     f.write(content)
     f.close()
     return _pdb
+
+
+class predicted_pdb_profile:
+    # Monomer Score (MS)
+    # Dimer Score (DS)
+    # Interchain contact probability scores (ICPS):
+    # Recall
+    name = ""
+    dimers = []
+    monomers_chains = []
+    chain_skeleton_CA = []
+    ds_scores = {}
+    ms_scores = {}
+    icps_scores = {}
+    recall = {}
+
+    pass
 
 
 class pdb_lines:
@@ -195,17 +214,6 @@ def correct_format(_pdb_row):
         8) + _pdb_copy.element + _pdb_copy.charge
 
 
-def pdb_from_array(_pdb, _filename):
-    array = []
-    content = ''
-    for x in _pdb:
-        val = string_array_from_pdb_array(x)
-        array.append(val)
-        content = content + val + '\n'
-    f = open(_filename, "w")
-    f.write(content + 'END')
-    f.close()
-    return array
 
 
 def get_unique_chains(_inp_details):
@@ -312,4 +320,54 @@ def fasta_to_chain_mapper(_fasta_file="/home/bdmlab/T1032o.fasta", _stoi="A2", _
     return chain_mapper
 
 
+def read_skeleton(_pdb_path="/home/bdmlab/Multimet_evatest_samples/true_monomer/H1036/H1036_A1.pdb"):
+    full_pdb = contents_to_info(read_pdb(_pdb_path))
+    # return list(filter(lambda x: (x.atom_name == "CA"), full_pdb))
+    return full_pdb
+
+
+def distance(coord1, coord2):
+    x1 = float(coord1["x"])
+    y1 = float(coord1["y"])
+    z1 = float(coord1["z"])
+    x2 = float(coord2["x"])
+    y2 = float(coord2["y"])
+    z2 = float(coord2["z"])
+    d = np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
+
+    return d
+
+
+def if_contact(_first_chain_path, _second_chain_path):
+    first_chain_CA = list(filter(lambda x: (x.atom_name == "CA"), _first_chain_path))
+    second_chain_CA = list(filter(lambda x: (x.atom_name == "CA"), _second_chain_path))
+    for a_cord in first_chain_CA:
+        for b_cord in second_chain_CA:
+            # can make it a little more optimized
+            if np.sqrt((float(a_cord.x) - float(b_cord.x)) ** 2 + (float(a_cord.y) - float(b_cord.y)) ** 2 + (
+                    float(a_cord.z) - float(b_cord.z)) ** 2) <= 8:
+                return True
+    return False
+
+
+def get_CA_cmaps(_first_chain, _second_chain):
+    CA_first_chain = list(filter(lambda x: (x.atom_name == "CA"), copy.deepcopy(_first_chain)))
+    CA_second_chain =  list(filter(lambda x: (x.atom_name == "CA"), copy.deepcopy(copy.deepcopy(_second_chain) )))
+    chain_len_a = len(CA_first_chain)
+    chain_len_b = len(CA_second_chain)
+    cmap_array = np.zeros((chain_len_a, chain_len_b))
+    for a_cord in range(chain_len_a):
+        for b_cord in range(chain_len_b):
+            # can make it a little more optimized
+            dist = np.sqrt((float(CA_first_chain[a_cord].x) - float(CA_second_chain[b_cord].x)) ** 2 + (
+                        float(CA_first_chain[a_cord].y) - float(CA_second_chain[b_cord].y)) ** 2 + (
+                                       float(CA_first_chain[a_cord].z) - float(CA_second_chain[b_cord].z)) ** 2)
+            if dist <= 8:
+                cmap_array[a_cord][b_cord] = 1
+
+    return cmap_array
+
 # fasta_to_chain_mapper()
+
+#
+# read_CA_skeleton()
