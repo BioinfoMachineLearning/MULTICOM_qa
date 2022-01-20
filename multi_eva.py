@@ -25,7 +25,7 @@ monomer_sequences_dir = "/home/bdmlab/Multimet_evatest_samples/casp_fasta/T1038.
 input_dir = "/home/bdmlab/Multimet_evatest_samples/predictions/T1038o_lite/"
 stoichiometry = "A2"
 output_dir = "/home/bdmlab/multi_eva_test/T1038_LITE/"
-
+TARGET_NAME = os.path.basename(monomer_sequences_dir).replace(".fasta","")
 
 score_dir = output_dir+"score/"
 os.system("mkdir -p "+score_dir)
@@ -46,6 +46,7 @@ for monomer in predicted_pdb_files :
         all_chains_discovered.append(values)
 
 all_chains_discovered = list(dict.fromkeys(all_chains_discovered))
+
 # print(all_chains_discovered)
 all_monomer_files = []
 predicted_monomer_chains_dir = output_dir+"monomer_chains/"
@@ -169,9 +170,9 @@ for pdb in pdb_profile_dict:
                 temp_dimer_array = copy.deepcopy(monomer_a)+copy.deepcopy(monomer_b)
                 eva_util.pdb_from_array(_pdb=temp_dimer_array,_filename=dimer_pdb_file_name)
 
-            ####THEN CONCAT DIMER PDB AND SAVE
+#             ####THEN CONCAT DIMER PDB AND SAVE
 #then calculate the other score
-
+#
 for pdb in pdb_profile_dict:
     temp_pdb_profile  = pdb_profile_dict.get(pdb)
     a_dimer_score_dict = {}
@@ -190,12 +191,95 @@ for pdb in pdb_profile_dict:
         else:
             a_dimer_score_dict[dimer] = 0.0
     pdb_profile_dict.get(pdb).ds_scores = a_dimer_score_dict
-print("HERE")
-            # eva_util.
+#load glinter cmap
+predicted_cmap_dir= output_dir +"predicted_cmaps/"
+#
+# #get icps score
+for pdb in pdb_profile_dict:
+    temp_pdb_profile = pdb_profile_dict.get(pdb)
+    a_dimer_score_dict = {}
+    for dimer in valid_dimer_combindations:
+        dimer_chain_scores = []
+        if dimer in temp_pdb_profile.dimers:
+            dimer_cmap_file_name = predicted_structures_dimer_cmap_dir+str(pdb)+"_chain_"+dimer+".cmap"
+            #GLINTER FORMAT
+            pred_file_name = predicted_cmap_dir+TARGET_NAME+"_"+dimer[0]+":"+TARGET_NAME+"_"+dimer[1]+".cmap"
+            print(dimer_cmap_file_name)
+            print(pred_file_name)
+            if os.path.exists(pred_file_name) and os.path.exists(dimer_cmap_file_name):
+                a_icps_score=eva_util.get_icps_score(_struct_cmap=dimer_cmap_file_name,_pred_cmap=pred_file_name)
+                pdb_profile_dict.get(pdb).icps_scores[dimer]=a_icps_score
+                recall_score =  eva_util.get_recall(_struct_cmap=dimer_cmap_file_name,_pred_cmap=pred_file_name)
+                pdb_profile_dict.get(pdb).recall[dimer] = recall_score
+        else:
+            pdb_profile_dict.get(pdb).icps_scores[dimer] = 0
+            pdb_profile_dict.get(pdb).recall[dimer] = 0
+
+
+monomer_score_dict ={}
 
 
 
 
+for monomers in all_chains_discovered:
+    monomer_score_file =  monomer_score_dir+"/"+monomers+str(".tm")
+    monomer_score_dict[monomers] = eva_util.read_monomer_score(_path = monomer_score_file)
 
-#### 6 #### COMPARE WITH PREDICTION THEN JOB DONE
-#### 7 ####TRUE EVALUATIONS
+for pdb_values in pdb_profile_dict:
+    # temp_monomer_score = copy.deepcopy(pdb_profile_dict.get(values))
+    # temp_monomer_score.ms_scores[monomers] = monomer_score_dict.get(values)
+    for values in all_chains_discovered:
+        print(pdb_profile_dict.get(pdb_values).ms_scores)
+        print(monomer_score_dict.get(values).get(pdb_values))
+        pdb_profile_dict.get(pdb_values).ms_scores[values] = copy.deepcopy(monomer_score_dict.get(values).get(pdb_values))
+
+        # temp[monomers] = copy.deepcopy(monomer_score_dict.get(values))
+
+        # pdb_profile_dict.get(values).ms_scores[monomers]=copy.deepcopy(monomer_score_dict.get(values))
+
+        # temp = {pdb_profile_dict.get(values).ms_scores}
+        # pdb_profile_dict.get(values).ms_scores[monomers] = copy.deepcopy(monomer_score_dict.get(values))
+        # temp = copy.deepcopy(pdb_profile_dict.get(values))
+        # temp_monomer_score = copy.deepcopy(monomer_score_dict.get(values))
+        # temp.ms_scores[monomers]=temp_monomer_score
+
+        # pdb_profile_dict.get(values).ms_scores = temp
+#
+#
+
+counter = 0
+Result_string = ""
+Result_string = Result_string+"NAME , Monomer Scores , Dimer_scores , ICPS , Recall , Final_score"
+for values in pdb_profile_dict:
+    temp = None
+    temp = pdb_profile_dict.get(values)
+    row_string = str(values)+","
+    ms_score = []
+    for monomers in all_chains_discovered:
+        ms_score.append(float(monomer_score_dict.get(monomers).get(values)))
+    ms= np.average(ms_score)
+    dimer_score = []
+    for dimers in pdb_profile_dict.get(values).dimers:
+        dimer_score.append(pdb_profile_dict.get(values).ds_scores.get(dimers))
+    ds = np.average(dimer_score)
+    for dimers in pdb_profile_dict.get(values).dimers:
+        dimer_score.append(pdb_profile_dict.get(values).ds_scores.get(dimers))
+    np.average(dimer_score)
+    icps=[]
+    for dimers in pdb_profile_dict.get(values).dimers:
+        icps.append(pdb_profile_dict.get(values).icps_scores.get(dimers))
+    is_c =np.average(icps)
+    recall=[]
+    for dimers in pdb_profile_dict.get(values).dimers:
+        recall.append(pdb_profile_dict.get(values).recall.get(dimers))
+    rec = np.average(recall)
+    final_score = (ms+ds+is_c+rec)/4
+    row_string = str(values)+","+str(ms)+","+str(ds)+","+str(is_c)+","+str(rec)+","+str(final_score)+"\n"
+
+    # pdb_profile_dict.get(values).ms_scores["A"] =counter
+    # counter=counter+1
+    print(row_string)
+print ("DDDDDDDDDDDDONE")
+
+#### 7 #### COMPARE WITH PREDICTION THEN JOB DONE
+#### 8 ####TRUE EVALUATIONS

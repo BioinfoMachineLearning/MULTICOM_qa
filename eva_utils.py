@@ -216,8 +216,6 @@ def correct_format(_pdb_row):
         8) + _pdb_copy.element + _pdb_copy.charge
 
 
-
-
 def get_unique_chains(_inp_details):
     chain_array = []
     for val in _inp_details:
@@ -354,7 +352,7 @@ def if_contact(_first_chain_path, _second_chain_path):
 
 def get_CA_cmaps(_first_chain, _second_chain):
     CA_first_chain = list(filter(lambda x: (x.atom_name == "CA"), copy.deepcopy(_first_chain)))
-    CA_second_chain =  list(filter(lambda x: (x.atom_name == "CA"), copy.deepcopy(copy.deepcopy(_second_chain) )))
+    CA_second_chain = list(filter(lambda x: (x.atom_name == "CA"), copy.deepcopy(copy.deepcopy(_second_chain))))
     chain_len_a = len(CA_first_chain)
     chain_len_b = len(CA_second_chain)
     cmap_array = np.zeros((chain_len_a, chain_len_b))
@@ -362,28 +360,80 @@ def get_CA_cmaps(_first_chain, _second_chain):
         for b_cord in range(chain_len_b):
             # can make it a little more optimized
             dist = np.sqrt((float(CA_first_chain[a_cord].x) - float(CA_second_chain[b_cord].x)) ** 2 + (
-                        float(CA_first_chain[a_cord].y) - float(CA_second_chain[b_cord].y)) ** 2 + (
-                                       float(CA_first_chain[a_cord].z) - float(CA_second_chain[b_cord].z)) ** 2)
+                    float(CA_first_chain[a_cord].y) - float(CA_second_chain[b_cord].y)) ** 2 + (
+                                   float(CA_first_chain[a_cord].z) - float(CA_second_chain[b_cord].z)) ** 2)
             if dist <= 8:
                 cmap_array[a_cord][b_cord] = 1
 
     return cmap_array
-DOCK_Q_PATH ="/home/bdmlab/Documents/DockQ/DockQ.py"
-def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb", _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb"):
+
+
+DOCK_Q_PATH = "/home/bdmlab/Documents/DockQ/DockQ.py"
+
+
+def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
+                     _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb"):
     contents = subprocess.check_output([DOCK_Q_PATH, _true, _current])
-    dock_q_score  = 0
+    dock_q_score = 0
     for item in contents.decode("utf-8").split("\n"):
         not_first_dock = True
         if "DockQ " in item:
-            if       len(item.strip().split(" ")) == 2:
-                dock_q_score  = item.strip().split(" ")[1].strip()
+            if len(item.strip().split(" ")) == 2:
+                dock_q_score = item.strip().split(" ")[1].strip()
                 return float(dock_q_score)
 
+
+def get_icps_score(_struct_cmap, _pred_cmap):
+    first_cmap_copy =  np.loadtxt(_struct_cmap)
+    second_cmap_copy = np.loadtxt(_pred_cmap)
+    len_a, len_b = first_cmap_copy.shape
+    icps_list = []
+    con_number =int(min(len_b, len_a)/5)
+    for i in range(con_number):
+        (x, y) = np.unravel_index(np.argmax(first_cmap_copy, axis=None), first_cmap_copy.shape)
+        first_cmap_copy[x][y] = 0
+        icps_list.append(second_cmap_copy[x][y])
+
+    return np.average(icps_list)
+
+def get_recall(_struct_cmap, _pred_cmap):
+    struct_cmap =  np.loadtxt(_struct_cmap)
+    pred_cmap = np.loadtxt(_pred_cmap)
+    len_a, len_b = pred_cmap.shape
+    icps_list = []
+    con_number = int(min(len_b, len_a)/5)
+    true_positive = 0
+    s_len_a ,s_len_b = struct_cmap.shape
+    i= 0
+    while i <con_number:
+        (x, y) = np.unravel_index(np.argmax(pred_cmap, axis=None), pred_cmap.shape)
+        pred_cmap[x][y] = 0
+        if x < s_len_a and y <s_len_b:
+            i = i + 1
+            if int(struct_cmap[x][y])==1:
+                true_positive = true_positive+1
+                print(true_positive)
+    return true_positive/con_number
+
+def read_monomer_score(_path="/home/bdmlab/multi_eva_test/T1038_LITE/score/monomer/A.tm"):
+    chain_name = os.path.basename(_path).replace(".tm","")
+    out_dict = {}
+    file = open(_path, "r")
+    output_array = []
+    if file.mode == 'r':
+        output_array = file.read().strip().splitlines()
+        file.close()
+    for values in output_array[4:len(output_array)-1]:
+        name = values.split(" ")[0].replace("_chain_"+str(chain_name)+".pdb","")
+        out_dict[name] =float(values.split(" ")[1].strip())
+    return out_dict
+# read_monomer_score()
+# get_recall(_struct_cmap="/home/bdmlab/multi_eva_test/T1038/struct_dimer_cmaps/T1038TS451_4o_chain_AB.cmap",_pred_cmap="/home/bdmlab/multi_eva_test/T1038/struct_dimer_cmaps/T1038TS451_4o_chain_AB.cmap")
 # def DockQ_command():
 #     # cmd = "/home/bdmlab/Documents/DockQ/DockQ.py /home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb /home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb"
 #
 #     get_tm_align_score()
-    # print(val)
+# print(val)
 #
 # DockQ_command()
 # fasta_to_chain_mapper()
