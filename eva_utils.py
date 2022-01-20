@@ -1,6 +1,8 @@
 import copy
 import os
 import re
+import subprocess
+
 import numpy as np
 
 
@@ -366,7 +368,24 @@ def get_CA_cmaps(_first_chain, _second_chain):
                 cmap_array[a_cord][b_cord] = 1
 
     return cmap_array
+DOCK_Q_PATH ="/home/bdmlab/Documents/DockQ/DockQ.py"
+def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb", _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb"):
+    contents = subprocess.check_output([DOCK_Q_PATH, _true, _current])
+    dock_q_score  = 0
+    for item in contents.decode("utf-8").split("\n"):
+        not_first_dock = True
+        if "DockQ " in item:
+            if       len(item.strip().split(" ")) == 2:
+                dock_q_score  = item.strip().split(" ")[1].strip()
+                return float(dock_q_score)
 
+# def DockQ_command():
+#     # cmd = "/home/bdmlab/Documents/DockQ/DockQ.py /home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb /home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb"
+#
+#     get_tm_align_score()
+    # print(val)
+#
+# DockQ_command()
 # fasta_to_chain_mapper()
 
 #
