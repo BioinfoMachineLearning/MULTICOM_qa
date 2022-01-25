@@ -1,7 +1,9 @@
 import copy
+import csv
 import os
 import re
 import subprocess
+
 
 import numpy as np
 
@@ -384,11 +386,11 @@ def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_p
 
 
 def get_icps_score(_struct_cmap, _pred_cmap):
-    first_cmap_copy =  np.loadtxt(_struct_cmap)
+    first_cmap_copy = np.loadtxt(_struct_cmap)
     second_cmap_copy = np.loadtxt(_pred_cmap)
     len_a, len_b = first_cmap_copy.shape
     icps_list = []
-    con_number =int(min(len_b, len_a)/5)
+    con_number = int(min(len_b, len_a) / 5)
     for i in range(con_number):
         (x, y) = np.unravel_index(np.argmax(first_cmap_copy, axis=None), first_cmap_copy.shape)
         first_cmap_copy[x][y] = 0
@@ -396,37 +398,60 @@ def get_icps_score(_struct_cmap, _pred_cmap):
 
     return np.average(icps_list)
 
+
 def get_recall(_struct_cmap, _pred_cmap):
-    struct_cmap =  np.loadtxt(_struct_cmap)
+    struct_cmap = np.loadtxt(_struct_cmap)
     pred_cmap = np.loadtxt(_pred_cmap)
     len_a, len_b = pred_cmap.shape
     icps_list = []
-    con_number = int(min(len_b, len_a)/5)
+    con_number = int(min(len_b, len_a) / 5)
     true_positive = 0
-    s_len_a ,s_len_b = struct_cmap.shape
-    i= 0
-    while i <con_number:
+    s_len_a, s_len_b = struct_cmap.shape
+    i = 0
+    while i < con_number:
         (x, y) = np.unravel_index(np.argmax(pred_cmap, axis=None), pred_cmap.shape)
         pred_cmap[x][y] = 0
-        if x < s_len_a and y <s_len_b:
+        if x < s_len_a and y < s_len_b:
             i = i + 1
-            if int(struct_cmap[x][y])==1:
-                true_positive = true_positive+1
+            if int(struct_cmap[x][y]) == 1:
+                true_positive = true_positive + 1
                 print(true_positive)
-    return true_positive/con_number
+    return true_positive / con_number
+
 
 def read_monomer_score(_path="/home/bdmlab/multi_eva_test/T1038_LITE/score/monomer/A.tm"):
-    chain_name = os.path.basename(_path).replace(".tm","")
+    chain_name = os.path.basename(_path).replace(".tm", "")
     out_dict = {}
     file = open(_path, "r")
     output_array = []
     if file.mode == 'r':
         output_array = file.read().strip().splitlines()
         file.close()
-    for values in output_array[4:len(output_array)-1]:
-        name = values.split(" ")[0].replace("_chain_"+str(chain_name)+".pdb","")
-        out_dict[name] =float(values.split(" ")[1].strip())
+    for values in output_array[4:len(output_array) - 1]:
+        name = values.split(" ")[0].replace("_chain_" + str(chain_name) + ".pdb", "")
+        out_dict[name] = float(values.split(" ")[1].strip())
     return out_dict
+
+
+def report_individual_target(_header_row, _data_array, _file_name):
+    data_array = copy.deepcopy(_data_array)
+
+    name_of_output_file = _file_name
+
+    with open(name_of_output_file, 'w') as csvfile:
+        filewriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        # filewriter.writerow(    ['Name', 'TOP_S_L10', 'TOP_S_L5'])
+        filewriter.writerow(_header_row)
+        for data in data_array:
+            filewriter.writerow(data)
+    # print(output_dir + name_of_output_file)
+    print(name_of_output_file)
+
+
+#
+# sample_array = [['A','1','2'],['B','1','2']]
+# report_individual_target(_header_row=['a','v','c'],_data_array=sample_array,_file_name="/home/bdmlab/test_sample.csv")
+
 # read_monomer_score()
 # get_recall(_struct_cmap="/home/bdmlab/multi_eva_test/T1038/struct_dimer_cmaps/T1038TS451_4o_chain_AB.cmap",_pred_cmap="/home/bdmlab/multi_eva_test/T1038/struct_dimer_cmaps/T1038TS451_4o_chain_AB.cmap")
 # def DockQ_command():
@@ -440,3 +465,43 @@ def read_monomer_score(_path="/home/bdmlab/multi_eva_test/T1038_LITE/score/monom
 
 #
 # read_CA_skeleton()
+
+def get_preci_val(_x ):
+    return  "{:.5f}".format(_x)
+
+def print_final_data(_file_name, _file_data, _chain_data):
+    _data_array = []
+    all_chains_discovered = copy.deepcopy(_chain_data)
+    file_data = copy.deepcopy(_file_data)
+    row_string = ""
+    data_row = []
+    for values in file_data:
+        temp = file_data.get(values)
+
+        temp_ms_score = []
+        temp_icps = []
+        temp_recall = []
+        temp_ds_score = []
+        for monomers in all_chains_discovered:
+            temp_ms_score.append(float(temp.ms_scores.get(monomers)))
+        ms = np.average(temp_ms_score)
+
+        for dimers in temp.dimers:
+            temp_ds_score.append(temp.ds_scores.get(dimers))
+        ds = np.average(temp_ds_score)
+
+        for dimers in temp.dimers:
+            temp_icps.append(temp.icps_scores.get(dimers))
+        is_c = np.average(temp_icps)
+
+        for dimers in temp.dimers:
+            temp_recall.append(temp.recall.get(dimers))
+
+        rec = np.average(temp_recall)
+
+        final_score = (ms + ds + is_c + rec) / 4
+        row_string = row_string + str(values) + "," + str(ms) + "," + str(ds) + "," + str(is_c) + "," + str(
+            rec) + "," + str(final_score) + "\n"
+        data_row.append([values, get_preci_val(ms) ,get_preci_val(ds),get_preci_val(is_c), get_preci_val(rec),get_preci_val(final_score )])
+    head_row = ['Name', 'Monomer_score', 'Dimer_score', 'ICP_score', 'recall_score', 'final_score']
+    report_individual_target(_header_row=head_row, _file_name=_file_name, _data_array=data_row)
