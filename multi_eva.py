@@ -21,10 +21,12 @@ import eva_utils as eva_util
 # stoichiometry = "A2"
 # output_dir = "/home/bdmlab/multi_eva_test/"
 
-monomer_sequences_dir = "/home/bdmlab/Multimet_evatest_samples/casp_fasta/T1038.fasta"
-input_dir = "/home/bdmlab/Multimet_evatest_samples/predictions/T1038o_lite/"
-stoichiometry = "A2"
-output_dir = "/home/bdmlab/multi_eva_test/T1038_LITE/"
+monomer_sequences_dir = "/home/bdmlab/H1045.fasta"
+# input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
+input_dir = "/home/bdmlab/hetero_test/concatenated_pdb/"
+stoichiometry = "A1B1"
+# output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
+output_dir = "/home/bdmlab/hetero_test/multi/"
 TARGET_NAME = os.path.basename(monomer_sequences_dir).replace(".fasta","")
 
 score_dir = output_dir+"score/"
@@ -82,7 +84,7 @@ for chain_value in all_chains_discovered:
 
     # if chain_value !="A":
     # cmd = PARIWISE_QA_SCRIPT +" "+predicted_monomer_chains_dir+str(chain_value)+" "+monomer_sequences_dir+ " "+Q_SCORE+ " "+TM_SCORE_PATH+" "+chain_value + " "+output_dir
-    cmd = PARIWISE_QA_SCRIPT +" "+predicted_monomer_chains_dir+str(chain_value)+" "+fasta_dir+str(chain_value)+".fasta"+ " "+Q_SCORE+ " "+TM_SCORE_PATH+" "+chain_value + " "+monomer_score_dir
+    cmd = "perl " +PARIWISE_QA_SCRIPT +" "+predicted_monomer_chains_dir+str(chain_value)+" "+fasta_dir+str(chain_value)+".fasta"+ " "+Q_SCORE+ " "+TM_SCORE_PATH+" "+chain_value + " "+monomer_score_dir
     print(cmd)
     os.system(cmd)
 #################### MONOMER SCORING PART #################################
@@ -192,10 +194,12 @@ for pdb in pdb_profile_dict:
             a_dimer_score_dict[dimer] = 0.0
     pdb_profile_dict.get(pdb).ds_scores = a_dimer_score_dict
 #load glinter cmap
+print("RECALL CALULCATOR")
 predicted_cmap_dir= output_dir +"predicted_cmaps/"
 #
 # #get icps score
 for pdb in pdb_profile_dict:
+    print(pdb)
     temp_pdb_profile = pdb_profile_dict.get(pdb)
 
     for dimer in valid_dimer_combindations:
@@ -223,19 +227,30 @@ for pdb in pdb_profile_dict:
 
                 pdb_profile_dict.get(pdb).recall = prev_recall
         else:
-            pdb_profile_dict.get(pdb).icps_scores[dimer] = 0
-            pdb_profile_dict.get(pdb).recall[dimer] = 0
+            prev_icps = copy.deepcopy(pdb_profile_dict.get(pdb).icps_scores)
+            prev_recall = copy.deepcopy(pdb_profile_dict.get(pdb).recall)
+            if len(prev_icps) > 0:
+                prev_icps.update({dimer, 0})
+            else:
+                prev_icps[dimer] = 0
+            pdb_profile_dict.get(pdb).icps_scores = prev_icps
+            if len(prev_recall) > 0:
+                prev_recall.update({dimer, 0})
+            else:
+                prev_recall[dimer] = 0
 
+            pdb_profile_dict.get(pdb).icps_scores = prev_icps
+            pdb_profile_dict.get(pdb).recall = prev_recall
 
 monomer_score_dict ={}
 
-
+print("MONOMER SCORE  CALULCATOR")
 #
 
 for monomers in all_chains_discovered:
     monomer_score_file =  monomer_score_dir+"/"+monomers+str(".tm")
     monomer_score_dict[monomers] = eva_util.read_monomer_score(_path = monomer_score_file)
-
+print("FINAL SCORE  CALULCATOR")
 for pdb_values in pdb_profile_dict:
     temp_pdb_profile = pdb_profile_dict.get(pdb_values)
     prev_ms_score = copy.deepcopy(pdb_profile_dict.get(pdb_values).ms_scores)

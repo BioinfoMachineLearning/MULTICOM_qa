@@ -162,10 +162,13 @@ def read_pdb(pdb):
 def pdb_from_array(_pdb, _filename):
     array = []
     content = ''
+    number = 1
     for x in _pdb:
+        x.serial = number
         val = string_array_from_pdb_array(x)
         array.append(val)
         content = content + val + '\n'
+        number = number+1
     f = open(_filename, "w")
     f.write(content + 'END')
     f.close()
@@ -185,6 +188,12 @@ def separate_by_chain(_pdb, _name):
     # print(_pdb)
     result = list(filter(lambda x: (x.chain == _name), _pdb))
     return result
+def fix_serial(_array, _no=1):
+    number = _no
+    for x in _array:
+        x.serial = number
+        number = number + 1
+    return _array
 
 
 def correct_format(_pdb_row):
