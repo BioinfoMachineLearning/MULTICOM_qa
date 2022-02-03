@@ -3,8 +3,8 @@ import subprocess
 import numpy as np
 
 tmscore_path = "/home/bdmlab/Documents/tools/TMalign"
-input_dir ="/home/bdmlab/T1016/T1016_pred/"
-native_pdb = "/home/bdmlab/T1016.pdb"
+input_dir ="/home/bdmlab/concatenated_pdb/"
+native_pdb = "/home/bdmlab/H1045.pdb"
 output_dir ="/home/rajroy/tmscore/"
 
 
@@ -53,7 +53,10 @@ for proteins in proteinNames:
         #         tmscore = item.strip().split("=")[1].split("(")[0]
         #         value.append(float(tmscore.strip()))
         #         print(tmscore)
-
-        print (proteins+str(",")+str(get_dock_q_score(_true=native_file,_current=pred)))
+        # print(proteins)
+        if "XNCX" in proteins:
+            print (proteins+str(",")+str(0))
+        else:
+            print (proteins+str(",")+str(get_dock_q_score(_true=native_file,_current=pred)))
 
 # print(np.average(np.array(value)))

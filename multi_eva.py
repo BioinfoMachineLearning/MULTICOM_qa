@@ -4,13 +4,13 @@ import itertools
 import os
 # from config import PARIWISE_QA_SCRIPT,Q_SCORE,TM_SCORE_PATH
 import numpy as np
-
+import time
 import  config as config_path
 PARIWISE_QA_SCRIPT = config_path.config.PARIWISE_QA_SCRIPT
 TM_SCORE_PATH=config_path.config.TM_SCORE_PATH
 Q_SCORE = config_path.config.Q_SCORE
 # print(config_path.config.PARIWISE_QA_SCRIPT)
-
+total_time = time.perf_counter()
 pdb_profile_dict  = {}
 ######REINDEXING SHOULD BE DONE
 
@@ -26,7 +26,7 @@ monomer_sequences_dir = "/home/bdmlab/H1045.fasta"
 input_dir = "/home/bdmlab/hetero_test/concatenated_pdb/"
 stoichiometry = "A1B1"
 # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
-output_dir = "/home/bdmlab/hetero_test/multi/"
+output_dir = "/home/bdmlab/time_test/"
 TARGET_NAME = os.path.basename(monomer_sequences_dir).replace(".fasta","")
 
 score_dir = output_dir+"score/"
@@ -40,7 +40,7 @@ predicted_pdb_files = eva_util.specific_filename_reader(input_dir,"")
 predicted_monomer_dir = output_dir+"monomer/"
 os.system("mkdir -p "+predicted_monomer_dir)
 all_chains_discovered= []
-
+start = time.perf_counter()
 #get all the chains
 for monomer in predicted_pdb_files :
     temp_monomer_name = input_dir+monomer
@@ -67,9 +67,12 @@ for chain_name  in a_multimer.chains:
     eva_util.write2File(_filename=fasta_dir+str(chain_name)+".fasta",_cont=fasta_content)
 
 ##fasta_to_chain_mapper(_fasta_file="/home/bdmlab/T1032o.fasta", _stoi="A2", _chains=["A", "B"]):
-
+end_time_start = time.perf_counter()
+print("processing time "+str(end_time_start-start)+"\n")
 #	die "need six parameters: input model dir, fasta sequence file, pairwise_QA path, tm_score path, target name (output name), output dir.\n";
 # for chain_values in all_chains_discovered
+start = time.perf_counter()
+
 ##################### MONOMER SCORING PART #################################
 for chain_value in all_chains_discovered:
     temp_chain_dir =  predicted_monomer_chains_dir+str(chain_value)
@@ -88,8 +91,10 @@ for chain_value in all_chains_discovered:
     print(cmd)
     os.system(cmd)
 #################### MONOMER SCORING PART #################################
-
+end_time_start = time.perf_counter()
+print("qA score time "+str(end_time_start-start)+"\n")
 # ALL CHAINS CA
+start = time.perf_counter()
 for pdb in predicted_pdb_files:
     temp_predicted_pdb_profile = eva_util.predicted_pdb_profile()
     temp_predicted_pdb_profile.monomers_chains =[]
@@ -194,7 +199,11 @@ for pdb in pdb_profile_dict:
             a_dimer_score_dict[dimer] = 0.0
     pdb_profile_dict.get(pdb).ds_scores = a_dimer_score_dict
 #load glinter cmap
+end_time_start = time.perf_counter()
+print("DS SCORING PART "+str(end_time_start-start)+"\n")
 print("RECALL CALULCATOR")
+start = time.perf_counter()
+# print("DS SCORING PART "+str(end_time_start-start)+"\n")
 predicted_cmap_dir= output_dir +"predicted_cmaps/"
 #
 # #get icps score
@@ -243,7 +252,8 @@ for pdb in pdb_profile_dict:
             pdb_profile_dict.get(pdb).recall = prev_recall
 
 monomer_score_dict ={}
-
+end_time_start = time.perf_counter()
+print("recall and icps SCORING PART "+str(end_time_start-start)+"\n")
 print("MONOMER SCORE  CALULCATOR")
 #
 
@@ -263,38 +273,6 @@ for pdb_values in pdb_profile_dict:
 
 print("here")
 
-eva_util.print_final_data(_file_name="/home/bdmlab/result.csv",_file_data=pdb_profile_dict,_chain_data =all_chains_discovered)
-# counter = 0
-# Result_string = ""
-# Result_string = Result_string+"NAME , Monomer Scores , Dimer_scores , ICPS , Recall , Final_score"
-# for values in pdb_profile_dict:
-#     temp = None
-#     temp = pdb_profile_dict.get(values)
-#     row_string = str(values)+","
-#     ms_score = []
-#     for monomers in all_chains_discovered:
-#         ms_score.append(float(monomer_score_dict.get(monomers).get(values)))
-#     ms= np.average(ms_score)
-#     dimer_score = []
-#     for dimers in pdb_profile_dict.get(values).dimers:
-#         dimer_score.append(pdb_profile_dict.get(values).ds_scores.get(dimers))
-#     ds = np.average(dimer_score)
-#     for dimers in pdb_profile_dict.get(values).dimers:
-#         dimer_score.append(pdb_profile_dict.get(values).ds_scores.get(dimers))
-#     np.average(dimer_score)
-#     icps=[]
-#     for dimers in pdb_profile_dict.get(values).dimers:
-#         icps.append(pdb_profile_dict.get(values).icps_scores.get(dimers))
-#     is_c =np.average(icps)
-#     recall=[]
-#     for dimers in pdb_profile_dict.get(values).dimers:
-#         recall.append(pdb_profile_dict.get(values).recall.get(dimers))
-#     rec = np.average(recall)
-#     final_score = (ms+ds+is_c+rec)/4
-#     row_string = str(values)+","+str(ms)+","+str(ds)+","+str(is_c)+","+str(rec)+","+str(final_score)+"\n"
-#
-#     # pdb_profile_dict.get(values).ms_scores["A"] =counter
-#     # counter=counter+1
-#     print(row_string)
-# print ("DDDDDDDDDDDDONE")
+eva_util.print_final_data(_file_name="/home/bdmlab/result_time_test.csv",_file_data=pdb_profile_dict,_chain_data =all_chains_discovered)
 
+print("GRAND TOTAL TIME "+str(time.perf_counter()-total_time)+"\n")

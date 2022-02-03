@@ -1,10 +1,11 @@
 import copy
 import csv
+import math
 import os
 import re
 import subprocess
-
-
+import numpy as np
+from PIL import Image as im
 import numpy as np
 
 
@@ -168,7 +169,7 @@ def pdb_from_array(_pdb, _filename):
         val = string_array_from_pdb_array(x)
         array.append(val)
         content = content + val + '\n'
-        number = number+1
+        number = number + 1
     f = open(_filename, "w")
     f.write(content + 'END')
     f.close()
@@ -188,6 +189,8 @@ def separate_by_chain(_pdb, _name):
     # print(_pdb)
     result = list(filter(lambda x: (x.chain == _name), _pdb))
     return result
+
+
 def fix_serial(_array, _no=1):
     number = _no
     for x in _array:
@@ -244,7 +247,7 @@ def multi_fasta_reader(_seq_file):
     counter = 0
     temp_name = ""
     for values in output_array:
-        print(str(counter) + " " + values)
+        # print(str(counter) + " " + values)
         if counter % 2 == 1:
             stoi_fasta_dict[temp_name] = values
         else:
@@ -314,7 +317,7 @@ def chain_pdb_combination_generator(_stoi, _chains, _fasta_stoic_dict):
                     stoi_chain_map_dict[val].append(_chains[0])
                     prev_fasta = temp_chain_dict[val]
                     temp_chain_dict[_chains[0]] = prev_fasta
-                    print(_chains[0])
+                    # print(_chains[0])
                     stoi_repeat_dict[val] = int(stoi_repeat_dict[val]) - 1
                     del _chains[0]
     a_multimer.chain_fasta = temp_chain_dict
@@ -407,7 +410,13 @@ def get_icps_score(_struct_cmap, _pred_cmap):
 
     return np.average(icps_list)
 
+def show_cmap_image(data,_name):
+    data = im.fromarray(data)
 
+    data = data.convert("L")
+
+    data.save(_name)
+    return
 def get_recall(_struct_cmap, _pred_cmap):
     struct_cmap = np.loadtxt(_struct_cmap)
     pred_cmap = np.loadtxt(_pred_cmap)
@@ -424,7 +433,7 @@ def get_recall(_struct_cmap, _pred_cmap):
             i = i + 1
             if int(struct_cmap[x][y]) == 1:
                 true_positive = true_positive + 1
-                print(true_positive)
+                # print(true_positive)
     return true_positive / con_number
 
 
@@ -475,8 +484,16 @@ def report_individual_target(_header_row, _data_array, _file_name):
 #
 # read_CA_skeleton()
 
-def get_preci_val(_x ):
-    return  "{:.5f}".format(_x)
+def get_preci_val(_x):
+    return "{:.5f}".format(_x)
+
+
+def replace_nan(_number):
+    if math.isnan(_number):
+        return 0
+    else:
+        return _number
+
 
 def print_final_data(_file_name, _file_data, _chain_data):
     _data_array = []
@@ -493,24 +510,31 @@ def print_final_data(_file_name, _file_data, _chain_data):
         temp_ds_score = []
         for monomers in all_chains_discovered:
             temp_ms_score.append(float(temp.ms_scores.get(monomers)))
-        ms = np.average(temp_ms_score)
+        ms = replace_nan(np.average(temp_ms_score))
 
         for dimers in temp.dimers:
             temp_ds_score.append(temp.ds_scores.get(dimers))
-        ds = np.average(temp_ds_score)
+        ds = replace_nan(np.average(temp_ds_score))
 
         for dimers in temp.dimers:
             temp_icps.append(temp.icps_scores.get(dimers))
-        is_c = np.average(temp_icps)
+        is_c =replace_nan( np.average(temp_icps))
 
         for dimers in temp.dimers:
             temp_recall.append(temp.recall.get(dimers))
 
-        rec = np.average(temp_recall)
+        rec = replace_nan(np.average(temp_recall))
 
         final_score = (ms + ds + is_c + rec) / 4
         row_string = row_string + str(values) + "," + str(ms) + "," + str(ds) + "," + str(is_c) + "," + str(
             rec) + "," + str(final_score) + "\n"
-        data_row.append([values, get_preci_val(ms) ,get_preci_val(ds),get_preci_val(is_c), get_preci_val(rec),get_preci_val(final_score )])
+        data_row.append([values, get_preci_val(ms), get_preci_val(ds), get_preci_val(is_c), get_preci_val(rec),
+                         get_preci_val(final_score)])
     head_row = ['Name', 'Monomer_score', 'Dimer_score', 'ICP_score', 'recall_score', 'final_score']
     report_individual_target(_header_row=head_row, _file_name=_file_name, _data_array=data_row)
+
+# print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/test/.cmap"))
+# print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/true/.cmap"))
+
+
+
