@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import numpy as np
+from Bio import pairwise2
 from PIL import Image as im
 import numpy as np
 
@@ -18,6 +19,11 @@ class multimer:
     scores = {}
 
     pass
+
+
+fasta_3_to_1_code = {'ala': 'A', 'arg': 'R', 'asn': 'N', 'asp': 'D', 'asx': 'B', 'cys': 'C', 'glu': 'E', 'gln': 'Q',
+                     'glx': 'Z', 'gly': 'G', 'his': 'H', 'ile': 'I', 'leu': 'L', 'lys': 'K', 'met': 'M', 'phe': 'F',
+                     'pro': 'P', 'ser': 'S', 'thr': 'T', 'trp': 'W', 'tyr': 'Y', 'val': 'V'}
 
 
 def write2File(_filename, _cont):
@@ -54,6 +60,16 @@ def space_returner(_input):
     return space
 
 
+def find_lowest_gap(_target, _hit):
+    aln_val = pairwise2.align.globalms(_target, _hit, 5, -4, -1, -0.1)
+    chain_target = list(aln_val[0][0])
+    chain_hit = list(aln_val[0][1])
+    print(chain_target)
+    print(chain_hit)
+
+    return chain_hit.count('-')
+
+
 def convert_to_pdb(_pdb, _name):
     content = ''
     for x in _pdb:
@@ -63,6 +79,23 @@ def convert_to_pdb(_pdb, _name):
     f.close()
     return _pdb
 
+def closest_key(_seq_fasta_dict,_fasta_string):
+    val = []
+    for key in _seq_fasta_dict:
+        val.append(find_lowest_gap(_seq_fasta_dict.get(key),_fasta_string))
+
+    seq = min(val)
+    index_closest = val.index(seq)
+
+    return index_closest
+def sequence_finder(_seq_fasta_dict,_fasta_string):
+    for key in _seq_fasta_dict:
+        temp_fasta = _seq_fasta_dict.get(key)
+        if temp_fasta == _fasta_string:
+            return  key
+    seq_ =  closest_key(_seq_fasta_dict,_fasta_string)
+    print(" closest_key ")
+    return seq_
 
 class predicted_pdb_profile:
     # Monomer Score (MS)
@@ -73,12 +106,24 @@ class predicted_pdb_profile:
     dimers = []
     monomers_chains = []
     chain_skeleton_CA = []
+    chain_fasta = []
     ds_scores = {}
     ms_scores = {}
     icps_scores = {}
     recall = {}
+    cluster = {}
+
 
     pass
+
+
+def dir_maker(_dir_name):
+    if not os.path.exists(_dir_name):
+        os.system("mkdir -p "+_dir_name)
+        return _dir_name
+    else:
+        print("Already exists ")
+        return _dir_name
 
 
 class pdb_lines:
@@ -149,6 +194,15 @@ def string_array_from_pdb_array(_pdb_row):
         6) + _pdb_copy.element
     return content
 
+
+def read_fasta(_fasta):
+    file = open(_fasta, "r")
+    output_array = []
+    if file.mode == 'r':
+        output_array = file.read().strip().splitlines()
+        file.close()
+
+    return output_array[1]
 
 def read_pdb(pdb):
     contents = []
@@ -237,6 +291,14 @@ def get_unique_chains(_inp_details):
     return list(dict.fromkeys(chain_array))
 
 
+def save_multi_fasta(_dir, _map):
+    for key in _map:
+        fasta_value = _map.get(key)
+        # print(key, fasta_value)
+        fasta_value = ">sequence_" + key+"\n"+fasta_value
+        write2File(_dir + "sequence_" + key + ".fasta", fasta_value)
+
+
 def multi_fasta_reader(_seq_file):
     file = open(_seq_file, "r")
     stoi_fasta_dict = {}
@@ -257,6 +319,21 @@ def multi_fasta_reader(_seq_file):
     return stoi_fasta_dict
 
 
+def get_fasta_from_pdb_array(_pdb):
+    pdb_a = _pdb
+    index_tracker_a = []
+    for val in pdb_a:
+        index_tracker_a.append(str(val.res_num) + "_" + str(val.res_name))
+    index_tracker_a = list(dict.fromkeys(index_tracker_a))
+    # print(index_tracker_a)
+    fasta_string = ''
+    for values in index_tracker_a:
+        three_code = values.split('_')[1].lower()
+        fasta_string = fasta_string + str(fasta_3_to_1_code.get(three_code))
+    # print(len(fasta_string))
+    return fasta_string
+
+
 def monomer_pdb_filtering(_pdb, _dir):
     tar_name = os.path.basename(_pdb)
     tar_dir = _dir + "/" + tar_name
@@ -265,12 +342,14 @@ def monomer_pdb_filtering(_pdb, _dir):
     chain_finder = get_unique_chains(full_pdb)
     # print(chain_finder)
     for chain in chain_finder:
-        temp_monomer_pdb = []
         temp_monomer_pdb = separate_by_chain(full_pdb, chain)
-
         tar_monomer_file = tar_dir + "/" + tar_name + "_chain_" + str(chain) + ".pdb"
         monomer_string = pdb_from_array(_pdb=temp_monomer_pdb, _filename=tar_monomer_file)
-        # convert_to_pdb(_pdb=monomer_string,_name=tar_monomer_file)
+
+        fasta_name = get_fasta_from_pdb_array(temp_monomer_pdb)
+        fasta_value = ">sequence_" + chain + "\n" + fasta_name
+        fasta_file_name =  tar_dir + "/" + tar_name + "_chain_" + str(chain) + ".fasta"
+        write2File(_filename=fasta_file_name,_cont=fasta_value)
 
     return chain_finder
 
@@ -415,13 +494,16 @@ def get_icps_score(_struct_cmap, _pred_cmap):
 
     return np.average(icps_list)
 
-def show_cmap_image(data,_name):
+
+def show_cmap_image(data, _name):
     data = im.fromarray(data)
 
     data = data.convert("L")
 
     data.save(_name)
     return
+
+
 def get_recall(_struct_cmap, _pred_cmap):
     struct_cmap = np.loadtxt(_struct_cmap)
     pred_cmap = np.loadtxt(_pred_cmap)
@@ -468,26 +550,8 @@ def report_individual_target(_header_row, _data_array, _file_name):
         for data in data_array:
             filewriter.writerow(data)
     # print(output_dir + name_of_output_file)
-    print(name_of_output_file)
+    # print(name_of_output_file)
 
-
-#
-# sample_array = [['A','1','2'],['B','1','2']]
-# report_individual_target(_header_row=['a','v','c'],_data_array=sample_array,_file_name="/home/bdmlab/test_sample.csv")
-
-# read_monomer_score()
-# get_recall(_struct_cmap="/home/bdmlab/multi_eva_test/T1038/struct_dimer_cmaps/T1038TS451_4o_chain_AB.cmap",_pred_cmap="/home/bdmlab/multi_eva_test/T1038/struct_dimer_cmaps/T1038TS451_4o_chain_AB.cmap")
-# def DockQ_command():
-#     # cmd = "/home/bdmlab/Documents/DockQ/DockQ.py /home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb /home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb"
-#
-#     get_tm_align_score()
-# print(val)
-#
-# DockQ_command()
-# fasta_to_chain_mapper()
-
-#
-# read_CA_skeleton()
 
 def get_preci_val(_x):
     return "{:.5f}".format(_x)
@@ -523,7 +587,7 @@ def print_final_data(_file_name, _file_data, _chain_data):
 
         for dimers in temp.dimers:
             temp_icps.append(temp.icps_scores.get(dimers))
-        is_c =replace_nan( np.average(temp_icps))
+        is_c = replace_nan(np.average(temp_icps))
 
         for dimers in temp.dimers:
             temp_recall.append(temp.recall.get(dimers))
@@ -540,6 +604,3 @@ def print_final_data(_file_name, _file_data, _chain_data):
 
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/test/.cmap"))
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/true/.cmap"))
-
-
-
