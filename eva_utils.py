@@ -320,6 +320,9 @@ def chain_pdb_combination_generator(_stoi, _chains, _fasta_stoic_dict):
                     # print(_chains[0])
                     stoi_repeat_dict[val] = int(stoi_repeat_dict[val]) - 1
                     del _chains[0]
+            ##workaround for shortcut
+            if len(temp_chain_dict) == total_subunits:
+                _chains = []
     a_multimer.chain_fasta = temp_chain_dict
     return a_multimer
 
@@ -387,6 +390,8 @@ DOCK_Q_PATH = "/home/bdmlab/Documents/DockQ/DockQ.py"
 
 def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
                      _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb"):
+    print(_true)
+    print(_current)
     contents = subprocess.check_output([DOCK_Q_PATH, _true, _current])
     dock_q_score = 0
     for item in contents.decode("utf-8").split("\n"):

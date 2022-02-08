@@ -3,6 +3,8 @@ import glob
 import itertools
 import os
 # from config import PARIWISE_QA_SCRIPT,Q_SCORE,TM_SCORE_PATH
+import sys
+
 import numpy as np
 import time
 import  config as config_path
@@ -21,12 +23,21 @@ import eva_utils as eva_util
 # stoichiometry = "A2"
 # output_dir = "/home/bdmlab/multi_eva_test/"
 
-monomer_sequences_dir = "/home/bdmlab/H1045.fasta"
+# monomer_sequences_dir = "/home/bdmlab/multimer_test/H1036.fasta"
+# # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
+# input_dir = "/home/bdmlab/multimer_test/H1036/"
+# stoichiometry = "A1B1C1"
+# # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
+# output_dir = "/home/bdmlab/multimer_test/"
+
+monomer_sequences_dir = sys.argv[1]
 # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
-input_dir = "/home/bdmlab/hetero_test/concatenated_pdb/"
-stoichiometry = "A1B1"
+input_dir =sys.argv[2]
+stoichiometry = sys.argv[3]
 # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
-output_dir = "/home/bdmlab/time_test/"
+output_dir = sys.argv[4]
+
+
 TARGET_NAME = os.path.basename(monomer_sequences_dir).replace(".fasta","")
 
 score_dir = output_dir+"score/"
@@ -58,19 +69,30 @@ os.system("mkdir -p " + predicted_monomer_chains_dir)
 # a_multimer = eva_util.multimer
 a_multimer = eva_util.fasta_to_chain_mapper(_fasta_file=monomer_sequences_dir, _stoi=stoichiometry, _chains=copy.deepcopy(all_chains_discovered))
 fasta_dir = output_dir+"fasta/"
+print(a_multimer)
 os.system("mkdir -p "+fasta_dir)
 ##lets make fasta dir and put fasta files there
 for chain_name  in a_multimer.chains:
     print(chain_name)
-    print(a_multimer.chain_fasta[chain_name])
-    fasta_content= ">"+str(chain_name)+"\n"+a_multimer.chain_fasta[chain_name]
-    eva_util.write2File(_filename=fasta_dir+str(chain_name)+".fasta",_cont=fasta_content)
+    print(a_multimer.chain_fasta.get(chain_name))
+    if a_multimer.chain_fasta.get(chain_name) != None:
+        fasta_content= ">"+str(chain_name)+"\n"+a_multimer.chain_fasta[chain_name]
+        eva_util.write2File(_filename=fasta_dir+str(chain_name)+".fasta",_cont=fasta_content)
 
 ##fasta_to_chain_mapper(_fasta_file="/home/bdmlab/T1032o.fasta", _stoi="A2", _chains=["A", "B"]):
 end_time_start = time.perf_counter()
 print("processing time "+str(end_time_start-start)+"\n")
 #	die "need six parameters: input model dir, fasta sequence file, pairwise_QA path, tm_score path, target name (output name), output dir.\n";
 # for chain_values in all_chains_discovered
+###########################
+### WARNING
+# removing unmapped files
+modified_all_chains_discovered= copy.deepcopy(all_chains_discovered)
+for values in modified_all_chains_discovered :
+    if  a_multimer.chain_fasta.get(values) == None:
+        all_chains_discovered.remove(values)
+
+
 start = time.perf_counter()
 
 ##################### MONOMER SCORING PART #################################
@@ -93,6 +115,9 @@ for chain_value in all_chains_discovered:
 #################### MONOMER SCORING PART #################################
 end_time_start = time.perf_counter()
 print("qA score time "+str(end_time_start-start)+"\n")
+
+
+
 # ALL CHAINS CA
 start = time.perf_counter()
 for pdb in predicted_pdb_files:
@@ -109,6 +134,7 @@ for pdb in predicted_pdb_files:
 
     temp_predicted_pdb_profile.chain_skeleton_CA = all_pdb_skeleton
     pdb_profile_dict[pdb] = temp_predicted_pdb_profile
+
 
 
 #### 1 #### FIND COMBINATION of all PAIRS
@@ -140,7 +166,7 @@ for values in all_dimer_combination:
     if (all_pdb_dimers_contact.count(dimer_str)) >= dimer_treshold_consideration:
         valid_dimer_combindations.append(str(values[0])+str(values[1]))
 
-
+##introduce that 20%
 #### 5 #### GENERATE CMAPS
 
 
