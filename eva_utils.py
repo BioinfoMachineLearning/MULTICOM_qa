@@ -213,12 +213,25 @@ def string_array_from_pdb_array(_pdb_row):
     _pdb_copy.temp_fact = space_returner(6 - len(_pdb_copy.temp_fact)) + _pdb_copy.temp_fact  # 61-66
     _pdb_copy.element = space_returner(4 - len(_pdb_copy.element)) + _pdb_copy.element  # 73-76
     _pdb_copy.charge = space_returner(2 - len(_pdb_copy.charge)) + _pdb_copy.charge  # 77-78
-    content = _pdb_copy.atom + space_returner(3) + _pdb_copy.serial + space_returner(
-        2) + _pdb_copy.atom_name + _pdb_copy.alt_loc + _pdb_copy.res_name + space_returner(
+
+    content = _pdb_copy.atom + space_returner(7 - len(_pdb_copy.serial)) + _pdb_copy.serial
+    if len(_pdb_copy.atom_name) < 4:
+        content = content + space_returner(2) + _pdb_copy.atom_name
+    elif len(_pdb_copy.atom_name) == 4:
+        content = content + " " + _pdb_copy.atom_name
+
+    content = content + _pdb_copy.alt_loc + _pdb_copy.res_name + space_returner(
         1) + _pdb_copy.chain + _pdb_copy.res_num + _pdb_copy.icode + space_returner(
         3) + _pdb_copy.x + _pdb_copy.y + _pdb_copy.z + _pdb_copy.occupancy + _pdb_copy.temp_fact + space_returner(
-        6) + _pdb_copy.element
+        8) + _pdb_copy.element + _pdb_copy.charge
     return content
+
+    # content = _pdb_copy.atom + space_returner(3) + _pdb_copy.serial + space_returner(
+    #     2) + _pdb_copy.atom_name + _pdb_copy.alt_loc + _pdb_copy.res_name + space_returner(
+    #     1) + _pdb_copy.chain + _pdb_copy.res_num + _pdb_copy.icode + space_returner(
+    #     3) + _pdb_copy.x + _pdb_copy.y + _pdb_copy.z + _pdb_copy.occupancy + _pdb_copy.temp_fact + space_returner(
+    #     6) + _pdb_copy.element
+    # return content
 
 
 def read_fasta(_fasta):
@@ -238,6 +251,11 @@ def read_pdb(pdb):
                 # pass
                 contents.append(line)
     return contents
+def chain_replacer (_pdb_file,_new_chain_name ):
+    _temp = copy.deepcopy(_pdb_file)
+    for value in _temp:
+        value.chain = _new_chain_name
+    return  _temp
 
 
 def pdb_from_array(_pdb, _filename):
@@ -322,7 +340,8 @@ def save_multi_fasta(_dir, _map):
         fasta_value = _map.get(key)
         # print(key, fasta_value)
         fasta_value = ">sequence_" + key+"\n"+fasta_value
-        write2File(_dir + "sequence_" + key + ".fasta", fasta_value)
+        write2File(_dir + "sequence_" + key + "_A.fasta", fasta_value)
+        write2File(_dir + "sequence_" + key + "_B.fasta", fasta_value)
 
 
 def multi_fasta_reader(_seq_file):
