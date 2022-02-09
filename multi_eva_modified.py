@@ -10,6 +10,7 @@ import time
 import config as config_path
 import eva_utils
 
+is_monomer_scoring_done = False
 PARIWISE_QA_SCRIPT = config_path.config.PARIWISE_QA_SCRIPT
 TM_SCORE_PATH = config_path.config.TM_SCORE_PATH
 Q_SCORE = config_path.config.Q_SCORE
@@ -85,8 +86,8 @@ for pdb in pdb_profile_dict:
     for values in temp_predicted_pdb_profile.chain_fasta:
         temp = eva_util.sequence_finder(fasta_stoic_dict, temp_predicted_pdb_profile.chain_fasta.get(values))
         temp_chain_cluster[values] = temp
-        if temp_cluster_chain.get(temp) !=  None:
-            temp_cluster_chain[temp].append( values)
+        if temp_cluster_chain.get(temp) != None:
+            temp_cluster_chain[temp].append(values)
             # update
         else:
             temp_cluster_chain[temp] = [values]
@@ -104,43 +105,21 @@ for true_squence in fasta_stoic_dict:
             if os.path.exists(monomer_pdb_name):
                 os.system("cp " + monomer_pdb_name + " " + current_dir_name)
 
+if is_monomer_scoring_done:
+    ##################### MONOMER SCORING PART #################################
+    for chain_value in fasta_stoic_dict:
+        temp_chain_dir = predicted_monomer_chains_dir + "sequence_" + str(chain_value) + "/"
+        # print(predicted_monomer_dir + "/**/*"+"_chain_"+str(chain_value))
+        all_monomer_chained_files = glob.glob(predicted_monomer_dir + "/**/*" + "_chain_" + str(chain_value) + ".pdb",
+                                              recursive=True)
+        cmd = "perl " + PARIWISE_QA_SCRIPT + " " + temp_chain_dir + " " + fasta_dir + "sequence_" + str(
+            chain_value) + ".fasta" + " " + Q_SCORE + " " + TM_SCORE_PATH + " " + chain_value + " " + monomer_score_dir
+        print(cmd)
+        os.system(cmd)
+    #################### MONOMER SCORING PART #################################
+    end_time_start = time.perf_counter()
+    print("qA score time " + str(end_time_start - start) + "\n")
 
-##################### MONOMER SCORING PART #################################
-for chain_value in fasta_stoic_dict:
-    temp_chain_dir =  predicted_monomer_chains_dir+"sequence_"+str(chain_value)+"/"
-    # print(predicted_monomer_dir + "/**/*"+"_chain_"+str(chain_value))
-    all_monomer_chained_files = glob.glob(predicted_monomer_dir + "/**/*"+"_chain_"+str(chain_value)+".pdb", recursive = True)
-    cmd = "perl " +PARIWISE_QA_SCRIPT +" "+temp_chain_dir+" "+fasta_dir+"sequence_"+str(chain_value)+".fasta"+ " "+Q_SCORE+ " "+TM_SCORE_PATH+" "+chain_value + " "+monomer_score_dir
-    print(cmd)
-    os.system(cmd)
-#################### MONOMER SCORING PART #################################
-end_time_start = time.perf_counter()
-print("qA score time "+str(end_time_start-start)+"\n")
-
-
-
-##Monomer Finding
-# copying all the files of the same type on one folder
-a_multimer = eva_util.multimer
-##########replace with true_fasta mapper
-# a_multimer = eva_util.fasta_to_chain_mapper(_fasta_file=monomer_sequences_dir, _stoi=stoichiometry, _chains=copy.deepcopy(all_chains_discovered))
-# fasta_dir = output_dir+"fasta/"
-# print(a_multimer)
-# os.system("mkdir -p "+fasta_dir)
-# ##lets make fasta dir and put fasta files there
-# for chain_name  in a_multimer.chains:
-#     print(chain_name)
-#     print(a_multimer.chain_fasta.get(chain_name))
-#     if a_multimer.chain_fasta.get(chain_name) != None:
-#         fasta_content= ">"+str(chain_name)+"\n"+a_multimer.chain_fasta[chain_name]
-#         eva_util.write2File(_filename=fasta_dir+str(chain_name)+".fasta",_cont=fasta_content)
-#
-# ##fasta_to_chain_mapper(_fasta_file="/home/bdmlab/T1032o.fasta", _stoi="A2", _chains=["A", "B"]):
-# end_time_start = time.perf_counter()
-# print("processing time "+str(end_time_start-start)+"\n")
-# #	die "need six parameters: input model dir, fasta sequence file, pairwise_QA path, tm_score path, target name (output name), output dir.\n";
-# # for chain_values in all_chains_discovered
-# ###########################
 # ### WARNING
 # # removing unmapped files
 # modified_all_chains_discovered= copy.deepcopy(all_chains_discovered)
@@ -151,68 +130,90 @@ a_multimer = eva_util.multimer
 #
 # start = time.perf_counter()
 #
-# ##################### MONOMER SCORING PART #################################
-# for chain_value in all_chains_discovered:
-#     temp_chain_dir =  predicted_monomer_chains_dir+str(chain_value)
-#     os.system("mkdir -p " +temp_chain_dir)
-#     print(predicted_monomer_dir + "/**/*"+"_chain_"+str(chain_value))
-#     all_monomer_chained_files = glob.glob(predicted_monomer_dir + "/**/*"+"_chain_"+str(chain_value)+".pdb", recursive = True)
-#     for values in all_monomer_chained_files:
-#         os.system("cp "+values+" "+temp_chain_dir)
-#
-#     # command for pairwise_qa
-#     # perl pairwise_model_eva.pl /home/rajroy/multi_eva_test/monomer_chains/A/ /home/rajroy/multi_eva_test/Multimet_evatest_samples/casp_fasta/H1036A.fasta /home/rajroy/pairwiseQA/q_score /home/rajroy/Downloads/tools/TMscore A /home/rajroy/q_A/
-#
-#     # if chain_value !="A":
-#     # cmd = PARIWISE_QA_SCRIPT +" "+predicted_monomer_chains_dir+str(chain_value)+" "+monomer_sequences_dir+ " "+Q_SCORE+ " "+TM_SCORE_PATH+" "+chain_value + " "+output_dir
-#     cmd = "perl " +PARIWISE_QA_SCRIPT +" "+predicted_monomer_chains_dir+str(chain_value)+" "+fasta_dir+str(chain_value)+".fasta"+ " "+Q_SCORE+ " "+TM_SCORE_PATH+" "+chain_value + " "+monomer_score_dir
-#     print(cmd)
-#     os.system(cmd)
-# #################### MONOMER SCORING PART #################################
-# end_time_start = time.perf_counter()
-# print("qA score time "+str(end_time_start-start)+"\n")
-#
-#
 #
 # # ALL CHAINS CA
 # start = time.perf_counter()
-# for pdb in predicted_pdb_files:
-#     temp_predicted_pdb_profile = eva_util.predicted_pdb_profile()
-#     temp_predicted_pdb_profile.monomers_chains =[]
-#     all_pdb_skeleton = {}
-#     temp_predicted_pdb_profile.name = pdb
-#     for monomer_chain in all_chains_discovered:
-#         a_monomer_chain_skeleton = predicted_monomer_dir + str(pdb) + "/" + str(pdb) + "_chain_" + monomer_chain + ".pdb"
-#         if os.path.exists(a_monomer_chain_skeleton):
-#             temp_predicted_pdb_profile.monomers_chains.append(copy.deepcopy(monomer_chain))
-#             monomer_chain_skeleton = eva_util.read_skeleton(a_monomer_chain_skeleton)
-#             all_pdb_skeleton[monomer_chain]=monomer_chain_skeleton
-#
-#     temp_predicted_pdb_profile.chain_skeleton_CA = all_pdb_skeleton
-#     pdb_profile_dict[pdb] = temp_predicted_pdb_profile
-#
+for pdb in predicted_pdb_files:
+    # temp_predicted_pdb_profile = eva_util.predicted_pdb_profile()
+    # temp_predicted_pdb_profile.monomers_chains = []
+    all_pdb_skeleton = {}
+    # temp_predicted_pdb_profile.name = pdb
+    for monomer_chain in pdb_profile_dict.get(pdb).monomers_chains:
+        a_monomer_chain_skeleton = predicted_monomer_dir + str(pdb) + "/" + str(
+            pdb) + "_chain_" + monomer_chain + ".pdb"
+        if os.path.exists(a_monomer_chain_skeleton):
+            # temp_predicted_pdb_profile.monomers_chains.append(copy.deepcopy(monomer_chain))
+            monomer_chain_skeleton = eva_util.read_skeleton(a_monomer_chain_skeleton)
+            all_pdb_skeleton[monomer_chain] = monomer_chain_skeleton
+    # temp_predicted_pdb_profile.chain_skeleton_CA = all_pdb_skeleton
+    pdb_profile_dict[pdb].chain_skeleton_CA = all_pdb_skeleton
+
+all_true_sequence = fasta_stoic_dict.keys()
+
 #
 #
 # #### 1 #### FIND COMBINATION of all PAIRS
-# all_dimer_combination = list (itertools.combinations(all_chains_discovered, 2))
-# #remove duplicate
-# # all_dimer_combination = filter(lambda x: (x[0] == x[1]), all_dimer_combination)
-#
-# all_pdb_dimers_contact = []
+# we will get all heterodimer connections here
+all_dimer_combination = list(itertools.combinations(all_true_sequence, 2))
+# all_dimer_combination = filter(lambda x: (x[0] == x[1]), all_dimer_combination)
+##############ADJUSTING FOR HOMODIMERS
+for dimers in fasta_stoic_dict:
+    all_dimer_combination.append([dimers, dimers])
+
+### check for homomdimer
+### check for heterodimer
+all_pdb_dimers_contact = []
 # #### 2 #### FIND If CONTACT
-# for pdb in pdb_profile_dict:
-#     temp =     pdb_profile_dict.get(pdb)
-#     temp_dimer = []
-#     for dimers in all_dimer_combination:
-#         first_chain = dimers[0]
-#         first_chain_pdb =temp.chain_skeleton_CA[first_chain]
-#         second_chain = dimers[1]
-#         second_chain_pdb = temp.chain_skeleton_CA[second_chain]
-#         if eva_util.if_contact(first_chain_pdb,second_chain_pdb) ==True:
-#             temp_dimer.append(str(first_chain)+str(second_chain))
-#             all_pdb_dimers_contact.append(str(first_chain)+str(second_chain))
-#
-#     temp.dimers=copy.deepcopy(temp_dimer)
+for pdb in pdb_profile_dict:
+    temp = pdb_profile_dict.get(pdb)
+    temp_dimer = []
+    temp_all_dimer_combination = copy.deepcopy( all_dimer_combination)
+    for dimers in all_dimer_combination:
+        if dimers[0] == dimers[1]:
+            len_a_dimers = len(temp.cluster_chain.get(dimers[0]))
+            if len_a_dimers == 1:
+                temp_all_dimer_combination.remove(dimers)
+
+
+    for dimers in temp_all_dimer_combination:
+        first_chain_list = temp.cluster_chain.get(dimers[0])
+        second_chain_list = temp.cluster_chain.get(dimers[1])
+        for first_chain in first_chain_list:
+            for second_chain in second_chain_list:
+                if first_chain != second_chain:
+                    first_chain_pdb = temp.chain_skeleton_CA[first_chain]
+                    second_chain_pdb = temp.chain_skeleton_CA[second_chain]
+                    if eva_util.if_contact(first_chain_pdb, second_chain_pdb):
+                        temp_dimer.append(str(first_chain) + str(second_chain))
+                        all_pdb_dimers_contact.append(str(pdb)+"_"+str(dimers[0]) + str(dimers[1]))
+    rr_removed_temp_dimer = []
+    for values in temp_dimer:
+        temp_values =[]
+        for char in values:
+            temp_values.append(char)
+
+        temp_values.sort()
+        # print(str(temp_values[0])+str(temp_values[1]))
+        rr_removed_temp_dimer.append(str(temp_values[0])+str(temp_values[1]))
+    rr_removed_temp_dimer = list(dict.fromkeys(rr_removed_temp_dimer))
+    temp.dimers = copy.deepcopy(rr_removed_temp_dimer)
+
+#################chain_hit.count('-')
+all_pdb_dimers_contact = list(dict.fromkeys(all_pdb_dimers_contact))
+clean_dimer = []
+for values in all_pdb_dimers_contact:
+    temp_arr = values.split("_")
+    clean_dimer.append(temp_arr[len(temp_arr)-1])
+
+valid_dimer_combos = []
+for _pdbs in all_dimer_combination:
+    str_pdb = str(_pdbs[0])+str(_pdbs[1])
+    number = clean_dimer.count(str_pdb)
+    dimer_treshold_consideration = int(len(pdb_profile_dict) * 0.2)
+    if number >= dimer_treshold_consideration:
+        valid_dimer_combos.append(str_pdb)
+
+print("here")
 # #find that 20% threshold for dimers in contact
 # #### 3 #### FIND 20% overlapping pairs
 # valid_dimer_combindations = []
