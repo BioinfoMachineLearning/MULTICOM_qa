@@ -111,7 +111,8 @@ class predicted_pdb_profile:
     ms_scores = {}
     icps_scores = {}
     recall = {}
-    cluster = {}
+    cluster_chain = {}
+    chain_cluster = {}
 
 
     pass

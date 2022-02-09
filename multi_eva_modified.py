@@ -35,7 +35,7 @@ output_dir = "/home/bdmlab/multimer_test/output/"
 TARGET_NAME = os.path.basename(monomer_sequences_dir).replace(".fasta", "")
 fasta_dir = eva_utils.dir_maker(output_dir + "fasta/")
 score_dir = eva_utils.dir_maker(output_dir + "score/")
-monomer_score_dir = eva_utils.dir_maker(score_dir + "monomer")
+monomer_score_dir = eva_utils.dir_maker(score_dir + "monomer/")
 
 fasta_stoic_dict = eva_util.multi_fasta_reader(_seq_file=monomer_sequences_dir)
 eva_util.save_multi_fasta(fasta_dir, fasta_stoic_dict)
@@ -46,8 +46,6 @@ TOTAL_SUBMISSION = len(predicted_pdb_files)
 predicted_monomer_dir = eva_utils.dir_maker(output_dir + "monomer/")
 all_chains_discovered = []
 start = time.perf_counter()
-# get all the chains
-# No need
 for monomer in predicted_pdb_files:
     temp_monomer_name = input_dir + monomer
     for values in eva_util.monomer_pdb_filtering(_pdb=temp_monomer_name, _dir=predicted_monomer_dir):
@@ -58,8 +56,6 @@ all_chains_discovered = list(dict.fromkeys(all_chains_discovered))
 # print(all_chains_discovered)
 all_monomer_files = []
 predicted_monomer_chains_dir = eva_utils.dir_maker(output_dir + "monomer_chains/")
-# os.system("mkdir -p " + predicted_monomer_chains_dir)
-#
 for pdb in predicted_pdb_files:
     temp_predicted_pdb_profile = eva_util.predicted_pdb_profile()
     temp_predicted_pdb_profile.monomers_chains = []
@@ -84,18 +80,45 @@ for pdb in predicted_pdb_files:
 #######chain cluster mapper
 for pdb in pdb_profile_dict:
     temp_predicted_pdb_profile = copy.deepcopy(pdb_profile_dict.get(pdb))
-
-    temp_cluster = {}
+    temp_chain_cluster = {}
+    temp_cluster_chain = {}
     for values in temp_predicted_pdb_profile.chain_fasta:
         temp = eva_util.sequence_finder(fasta_stoic_dict, temp_predicted_pdb_profile.chain_fasta.get(values))
-        #
-        # if len(temp_cluster) > 0:
-        #     temp_cluster.update({values,temp})
-        # else:
-        temp_cluster[values] = temp
+        temp_chain_cluster[values] = temp
+        if temp_cluster_chain.get(temp) !=  None:
+            temp_cluster_chain[temp].append( values)
+            # update
+        else:
+            temp_cluster_chain[temp] = [values]
 
-    pdb_profile_dict.get(pdb).cluster= copy.deepcopy(temp_cluster)
-# eva_util.sequence_finder(fasta_stoic_dict,_fasta_string="QVQLVQSGAEVKKPGSSVKVSCKASGGTFSNFAISWVRQAPGQGLEWMGRIMPLFVTSTYAQKFQGRVTISADASTSTAYMELSSLRSDDTAMYYCARDITAPGAAPTPLNFYGMDVWGQGTTVTVSS")
+    pdb_profile_dict.get(pdb).chain_cluster = copy.deepcopy(temp_chain_cluster)
+    pdb_profile_dict.get(pdb).cluster_chain = copy.deepcopy(temp_cluster_chain)
+#######NOW PUT ALL OF THEM IN ONE DIR OF MONOMER
+for true_squence in fasta_stoic_dict:
+    current_dir_name = predicted_monomer_chains_dir + "/sequence_" + str(true_squence) + "/"
+    eva_util.dir_maker(current_dir_name)
+    for _pdb in pdb_profile_dict:
+        temp_pdb = pdb_profile_dict.get(_pdb).cluster_chain.get(true_squence)
+        for chains in temp_pdb:
+            monomer_pdb_name = predicted_monomer_dir + str(_pdb) + "/" + str(_pdb) + "_chain_" + str(chains) + ".pdb"
+            if os.path.exists(monomer_pdb_name):
+                os.system("cp " + monomer_pdb_name + " " + current_dir_name)
+
+
+##################### MONOMER SCORING PART #################################
+for chain_value in fasta_stoic_dict:
+    temp_chain_dir =  predicted_monomer_chains_dir+"sequence_"+str(chain_value)+"/"
+    # print(predicted_monomer_dir + "/**/*"+"_chain_"+str(chain_value))
+    all_monomer_chained_files = glob.glob(predicted_monomer_dir + "/**/*"+"_chain_"+str(chain_value)+".pdb", recursive = True)
+    cmd = "perl " +PARIWISE_QA_SCRIPT +" "+temp_chain_dir+" "+fasta_dir+"sequence_"+str(chain_value)+".fasta"+ " "+Q_SCORE+ " "+TM_SCORE_PATH+" "+chain_value + " "+monomer_score_dir
+    print(cmd)
+    os.system(cmd)
+#################### MONOMER SCORING PART #################################
+end_time_start = time.perf_counter()
+print("qA score time "+str(end_time_start-start)+"\n")
+
+
+
 ##Monomer Finding
 # copying all the files of the same type on one folder
 a_multimer = eva_util.multimer
