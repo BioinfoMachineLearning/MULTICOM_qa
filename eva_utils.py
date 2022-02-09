@@ -117,7 +117,32 @@ class predicted_pdb_profile:
 
     pass
 
+def dimer_for_cmaps(_valid_dimer_combos,_temp_pdb_profile):
+    list_dimer = []
+    # _temp_list = [ ]
+    # for values in _temp_pdb_profile.dimers:
+    #     print(values)
+    #     _temp_list.append(values)
+    #
+    # for values in _valid_dimer_combos:
+    #     list_1 = _temp_pdb_profile.cluster_chain.get(values[0])
+    #     list_2 = _temp_pdb_profile.cluster_chain.get(values[1])
+    #     for l1_value in list_1:
+    #         for l2_value in list_2:
+    #             if list_1!=list_2:
+    #                 list_dimer.append(str(l1_value)+str(l2_value))
+    for values in _temp_pdb_profile.dimers:
+        chain_1 = _temp_pdb_profile.chain_cluster.get(values[0])
+        chain_2 = _temp_pdb_profile.chain_cluster.get(values[1])
+        literal_chain_value = str(chain_1)+str(chain_2)
+        if literal_chain_value in _valid_dimer_combos:
+            list_dimer.append(values)
+        else:
+            literal_chain_value = str(chain_2) + str(chain_1)
+            if literal_chain_value in _valid_dimer_combos:
+                list_dimer.append(values)
 
+    return list_dimer
 def dir_maker(_dir_name):
     if not os.path.exists(_dir_name):
         os.system("mkdir -p "+_dir_name)

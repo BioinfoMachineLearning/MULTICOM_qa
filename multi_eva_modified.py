@@ -167,13 +167,12 @@ all_pdb_dimers_contact = []
 for pdb in pdb_profile_dict:
     temp = pdb_profile_dict.get(pdb)
     temp_dimer = []
-    temp_all_dimer_combination = copy.deepcopy( all_dimer_combination)
+    temp_all_dimer_combination = copy.deepcopy(all_dimer_combination)
     for dimers in all_dimer_combination:
         if dimers[0] == dimers[1]:
             len_a_dimers = len(temp.cluster_chain.get(dimers[0]))
             if len_a_dimers == 1:
                 temp_all_dimer_combination.remove(dimers)
-
 
     for dimers in temp_all_dimer_combination:
         first_chain_list = temp.cluster_chain.get(dimers[0])
@@ -185,44 +184,69 @@ for pdb in pdb_profile_dict:
                     second_chain_pdb = temp.chain_skeleton_CA[second_chain]
                     if eva_util.if_contact(first_chain_pdb, second_chain_pdb):
                         temp_dimer.append(str(first_chain) + str(second_chain))
-                        all_pdb_dimers_contact.append(str(pdb)+"_"+str(dimers[0]) + str(dimers[1]))
+                        all_pdb_dimers_contact.append(str(pdb) + "_" + str(dimers[0]) + str(dimers[1]))
     rr_removed_temp_dimer = []
     for values in temp_dimer:
-        temp_values =[]
+        temp_values = []
         for char in values:
             temp_values.append(char)
 
         temp_values.sort()
         # print(str(temp_values[0])+str(temp_values[1]))
-        rr_removed_temp_dimer.append(str(temp_values[0])+str(temp_values[1]))
+        rr_removed_temp_dimer.append(str(temp_values[0]) + str(temp_values[1]))
     rr_removed_temp_dimer = list(dict.fromkeys(rr_removed_temp_dimer))
     temp.dimers = copy.deepcopy(rr_removed_temp_dimer)
 
 #################chain_hit.count('-')
 all_pdb_dimers_contact = list(dict.fromkeys(all_pdb_dimers_contact))
-clean_dimer = []
+valid_dimer_in_contact = []
 for values in all_pdb_dimers_contact:
     temp_arr = values.split("_")
-    clean_dimer.append(temp_arr[len(temp_arr)-1])
+    valid_dimer_in_contact.append(temp_arr[len(temp_arr) - 1])
 
 valid_dimer_combos = []
 for _pdbs in all_dimer_combination:
-    str_pdb = str(_pdbs[0])+str(_pdbs[1])
-    number = clean_dimer.count(str_pdb)
+    str_pdb = str(_pdbs[0]) + str(_pdbs[1])
+    number = valid_dimer_in_contact.count(str_pdb)
     dimer_treshold_consideration = int(len(pdb_profile_dict) * 0.2)
     if number >= dimer_treshold_consideration:
         valid_dimer_combos.append(str_pdb)
 
 print("here")
-# #find that 20% threshold for dimers in contact
-# #### 3 #### FIND 20% overlapping pairs
-# valid_dimer_combindations = []
-# dimer_treshold_consideration = int(len(pdb_profile_dict) *0.2)
-# for values in all_dimer_combination:
-#     dimer_str  = str(values[0])+str(values[1])
-#     if (all_pdb_dimers_contact.count(dimer_str)) >= dimer_treshold_consideration:
-#         valid_dimer_combindations.append(str(values[0])+str(values[1]))
-#
+predicted_structures_dimer_cmap_dir = eva_util.dir_maker(output_dir + "struct_dimer_cmaps/")
+dimer_strcutures_dir = eva_util.dir_maker(output_dir + "dimer_structures_pdb/")
+# eva_util.dir_maker(dimer_strcutures_dir + str("all") + "/")
+# eva_util.dir_maker(predicted_structures_dimer_cmap_dir + str("all") + "/")
+for values in valid_dimer_combos:
+    eva_util.dir_maker(dimer_strcutures_dir + str("sequence_") + values + "/")
+    eva_util.dir_maker(predicted_structures_dimer_cmap_dir + str("sequence_") + values + "/")
+
+for pdb in pdb_profile_dict:
+    temp_pdb_profile = pdb_profile_dict.get(pdb)
+    dimer_for_cmaps = eva_util.dimer_for_cmaps(valid_dimer_combos, temp_pdb_profile)
+    for dimer in dimer_for_cmaps:
+        cluster_1 = temp_pdb_profile.chain_cluster.get(dimer[0])
+        cluster_2 = temp_pdb_profile.chain_cluster.get(dimer[1])
+        chain_concat = cluster_1+cluster_2
+        if int(cluster_1) > int(cluster_2):
+            chain_concat = cluster_2+cluster_1
+
+        monomer_a = temp_pdb_profile.chain_skeleton_CA.get(dimer[0])
+        monomer_b = temp_pdb_profile.chain_skeleton_CA.get(dimer[1])
+        dimer_cmap_file_name = predicted_structures_dimer_cmap_dir + "sequence_" + str(chain_concat) + "/" + str(
+            pdb) + "_chain_" + dimer + ".cmap"
+
+        dimer_pdb_file_name = dimer_strcutures_dir + "sequence_" + str(chain_concat) + "/" + str(
+            pdb) + "_chain_" + dimer + ".pdb"
+        if not os.path.exists(dimer_cmap_file_name):
+            temp_cmaps = eva_util.get_CA_cmaps(_first_chain=monomer_a, _second_chain=monomer_b)
+            np.savetxt(dimer_cmap_file_name, temp_cmaps)
+            temp_dimer_array = copy.deepcopy(monomer_a) + copy.deepcopy(monomer_b)
+            eva_util.pdb_from_array(_pdb=temp_dimer_array, _filename=dimer_pdb_file_name)
+
+#             ####THEN CONCAT DIME
+
+
 # ##introduce that 20%
 # #### 5 #### GENERATE CMAPS
 #
@@ -238,31 +262,7 @@ print("here")
 # ################QUESION ALPHAFOLD STRUCTURE ??
 # #then run glinter
 # ####################ALREADY DONE CURRENTLY USING PRE_COMPUTED
-# #MAKE CMAPS
-# predicted_structures_dimer_cmap_dir = output_dir+"struct_dimer_cmaps/"
-# dimer_strcutures_dir  = output_dir+"dimer_structures_pdb/"
-# if not os.path.exists(predicted_structures_dimer_cmap_dir):
-#     os.system("mkdir -p "+predicted_structures_dimer_cmap_dir)
-# if not os.path.exists(dimer_strcutures_dir):
-#     os.system("mkdir -p "+dimer_strcutures_dir)
-# for pdb in pdb_profile_dict:
-#     temp_pdb_profile  = pdb_profile_dict.get(pdb)
-#     for dimer in temp_pdb_profile.dimers:
-#         if dimer in valid_dimer_combindations:
-#             monomer_a = temp_pdb_profile.chain_skeleton_CA.get(dimer[0])
-#             monomer_b = temp_pdb_profile.chain_skeleton_CA.get(dimer[1])
-#             dimer_cmap_file_name = predicted_structures_dimer_cmap_dir+str(pdb)+"_chain_"+dimer+".cmap"
-#             dimer_pdb_file_name = dimer_strcutures_dir + str(pdb) + "_chain_" + dimer + ".pdb"
-#             if not os.path.exists(dimer_cmap_file_name):
-#                 temp_cmaps = eva_util.get_CA_cmaps(_first_chain=monomer_a,_second_chain=monomer_b)
-#
-#                 np.savetxt(dimer_cmap_file_name,temp_cmaps)
-#                 temp_dimer_array = copy.deepcopy(monomer_a)+copy.deepcopy(monomer_b)
-#                 eva_util.pdb_from_array(_pdb=temp_dimer_array,_filename=dimer_pdb_file_name)
-#
-# #             ####THEN CONCAT DIMER PDB AND SAVE
-# #then calculate the other score
-# #
+
 # for pdb in pdb_profile_dict:
 #     temp_pdb_profile  = pdb_profile_dict.get(pdb)
 #     a_dimer_score_dict = {}
