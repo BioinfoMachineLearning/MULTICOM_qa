@@ -11,6 +11,7 @@ import config as config_path
 import eva_utils
 
 is_monomer_scoring_done = True
+is_dimer_scoring_done = True
 PARIWISE_QA_SCRIPT = config_path.config.PARIWISE_QA_SCRIPT
 TM_SCORE_PATH = config_path.config.TM_SCORE_PATH
 Q_SCORE = config_path.config.Q_SCORE
@@ -242,7 +243,8 @@ for pdb in pdb_profile_dict:
             temp_cmaps = eva_util.get_CA_cmaps(_first_chain=monomer_a, _second_chain=monomer_b)
             np.savetxt(dimer_cmap_file_name, temp_cmaps)
         if not os.path.exists(dimer_pdb_file_name):
-            temp_dimer_array = eva_util.chain_replacer(copy.deepcopy(monomer_a), "A") + eva_util.chain_replacer(copy.deepcopy(monomer_b), "B")
+            temp_dimer_array = eva_util.chain_replacer(copy.deepcopy(monomer_a), "A") + eva_util.chain_replacer(
+                copy.deepcopy(monomer_b), "B")
             eva_util.pdb_from_array(_pdb=temp_dimer_array, _filename=dimer_pdb_file_name)
 
 #             ####THEN CONCAT DIME
@@ -264,95 +266,107 @@ for pdb in pdb_profile_dict:
 # #then run glinter
 # ####################ALREADY DONE CURRENTLY USING PRE_COMPUTED
 #####target  wise
-for pdb in pdb_profile_dict:
-    print(pdb)
-    temp_pdb_profile = pdb_profile_dict.get(pdb)
-    a_dimer_score_dict = {}
-    #####possible dimer wise
+if not is_dimer_scoring_done:
+    for pdb in pdb_profile_dict:
+        print(pdb)
+        temp_pdb_profile = pdb_profile_dict.get(pdb)
+        a_dimer_score_dict = {}
+        #####possible dimer wise
 
-    for values in valid_dimer_combos:
-        print(values)
+        for values in valid_dimer_combos:
+            print(values)
 
-        # all_specific_dimer =glob.glob(dimer_strcutures_dir + "sequence_" + str(values) + "/*" + ".pdb",
-        #           recursive=True)
-        all_specific_dimer = eva_util.specific_filename_reader(  _input_dir=dimer_strcutures_dir + "sequence_" + str(values),            _extension="pdb")
-        all_specific_target_dimer = eva_util.specific_filename_reader(
-            _input_dir=dimer_strcutures_dir + "sequence_" + str(values), _extension=pdb)
-        temp_same_dimer_wise = []
-        ##### same type of dimer wise
-        for first_chain in all_specific_target_dimer:
+            # all_specific_dimer =glob.glob(dimer_strcutures_dir + "sequence_" + str(values) + "/*" + ".pdb",
+            #           recursive=True)
+            all_specific_dimer = eva_util.specific_filename_reader(
+                _input_dir=dimer_strcutures_dir + "sequence_" + str(values), _extension="pdb")
+            all_specific_target_dimer = eva_util.specific_filename_reader(
+                _input_dir=dimer_strcutures_dir + "sequence_" + str(values), _extension=pdb)
+            temp_same_dimer_wise = []
+            ##### same type of dimer wise
+            for first_chain in all_specific_target_dimer:
 
-            temp_dimer_chain_wise = []
-            chain_first = dimer_strcutures_dir + "sequence_" + str(values) + "/" + str(first_chain) + ".pdb"
-            print(chain_first)
-            #####specific dimer wise
-            for predicted_dimer in all_specific_dimer:
-                chain_second = dimer_strcutures_dir + "sequence_" + str(values) + "/" + predicted_dimer + ".pdb"
-                print(chain_second)
-                if chain_first != chain_second:
-                    temp_dimer_chain_wise.append(eva_util.get_dock_q_score(_true=chain_first, _current=chain_second))
-            temp_same_dimer_wise.append(np.average(temp_dimer_chain_wise))
-        if len(temp_same_dimer_wise) != 0:
-            a_dimer_score_dict[values] = np.max(temp_same_dimer_wise)
-        else:
-            a_dimer_score_dict[values] = 0
-    # else:
-    #     a_dimer_score_dict[values] = 0.0
-    pdb_profile_dict.get(pdb).ds_scores = a_dimer_score_dict
-print("here")
+                temp_dimer_chain_wise = []
+                chain_first = dimer_strcutures_dir + "sequence_" + str(values) + "/" + str(first_chain) + ".pdb"
+                print(chain_first)
+                #####specific dimer wise
+                for predicted_dimer in all_specific_dimer:
+                    chain_second = dimer_strcutures_dir + "sequence_" + str(values) + "/" + predicted_dimer + ".pdb"
+                    print(chain_second)
+                    if chain_first != chain_second:
+                        temp_dimer_chain_wise.append(
+                            eva_util.get_dock_q_score(_true=chain_first, _current=chain_second))
+                temp_same_dimer_wise.append(np.average(temp_dimer_chain_wise))
+            if len(temp_same_dimer_wise) != 0:
+                a_dimer_score_dict[values] = np.max(temp_same_dimer_wise)
+            else:
+                a_dimer_score_dict[values] = 0
+        # else:
+        #     a_dimer_score_dict[values] = 0.0
+        pdb_profile_dict.get(pdb).ds_scores = a_dimer_score_dict
+    print("here")
 # #load glinter cmap
 # end_time_start = time.perf_counter()
 # print("DS SCORING PART "+str(end_time_start-start)+"\n")
 # print("RECALL CALULCATOR")
 # start = time.perf_counter()
 # # print("DS SCORING PART "+str(end_time_start-start)+"\n")
-# predicted_cmap_dir= output_dir +"predicted_cmaps/"
+predicted_cmap_dir = eva_util.dir_maker(output_dir + "predicted_cmaps/")
 # #
 # # #get icps score
-# for pdb in pdb_profile_dict:
-#     print(pdb)
-#     temp_pdb_profile = pdb_profile_dict.get(pdb)
-#
-#     for dimer in valid_dimer_combindations:
-#
-#         if dimer in temp_pdb_profile.dimers:
-#             dimer_cmap_file_name = predicted_structures_dimer_cmap_dir+str(pdb)+"_chain_"+dimer+".cmap"
-#             #GLINTER FORMAT
-#             pred_file_name = predicted_cmap_dir+TARGET_NAME+"_"+dimer[0]+":"+TARGET_NAME+"_"+dimer[1]+".cmap"
-#             prev_icps =copy.deepcopy( pdb_profile_dict.get(pdb).icps_scores)
-#             prev_recall =copy.deepcopy( pdb_profile_dict.get(pdb).recall)
-#             if os.path.exists(pred_file_name) and os.path.exists(dimer_cmap_file_name):
-#                 a_icps_score=copy.deepcopy(eva_util.get_icps_score(_struct_cmap=dimer_cmap_file_name,_pred_cmap=pred_file_name))
-#                 if len(prev_icps)>0:
-#                     prev_icps.update({dimer,a_icps_score})
-#                 else:
-#                     prev_icps[dimer] = a_icps_score
-#                 pdb_profile_dict.get(pdb).icps_scores = prev_icps
-#
-#
-#                 a_recall_score = copy.deepcopy( eva_util.get_recall(_struct_cmap=dimer_cmap_file_name,_pred_cmap=pred_file_name))
-#                 if len(prev_recall)> 0:
-#                     prev_recall.update({dimer,a_recall_score})
-#                 else:
-#                     prev_recall[dimer] = a_recall_score
-#
-#                 pdb_profile_dict.get(pdb).recall = prev_recall
-#         else:
-#             prev_icps = copy.deepcopy(pdb_profile_dict.get(pdb).icps_scores)
-#             prev_recall = copy.deepcopy(pdb_profile_dict.get(pdb).recall)
-#             if len(prev_icps) > 0:
-#                 prev_icps.update({dimer, 0})
-#             else:
-#                 prev_icps[dimer] = 0
-#             pdb_profile_dict.get(pdb).icps_scores = prev_icps
-#             if len(prev_recall) > 0:
-#                 prev_recall.update({dimer, 0})
-#             else:
-#                 prev_recall[dimer] = 0
-#
-#             pdb_profile_dict.get(pdb).icps_scores = prev_icps
-#             pdb_profile_dict.get(pdb).recall = prev_recall
-#
+for pdb in pdb_profile_dict:
+    print(pdb)
+    temp_pdb_profile = pdb_profile_dict.get(pdb)
+    temp_icps_target = {}
+    temp_recall_target = {}
+    for dimer in valid_dimer_combos:
+        ## get all the dimer cmaps
+        ##for each calculate check if empty and also take the maximum
+        dimer_cmap_dir = predicted_structures_dimer_cmap_dir + "sequence_" + str(dimer) + "/"
+        print(dimer_cmap_dir)
+        if dimer[0] != dimer[1]:
+            predicted_cmap = predicted_cmap_dir + "Sequence_" + str(dimer[0]) + "_A:" + "Sequence_" + str(
+                dimer[1]) + "_A.cmap"
+        else:
+            predicted_cmap = predicted_cmap_dir + "Sequence_" + str(dimer[0]) + "_A:" + "Sequence_" + str(
+                dimer[1]) + "_B.cmap"
+        ## get all the cmaps
+        all_cmap_same_type = eva_util.specific_filename_reader(dimer_cmap_dir, pdb)
+        temp_list_icps = [0]
+        temp_list_recall = [0]
+        for _cmaps in all_cmap_same_type:
+            dimer_cmap_file_name = dimer_cmap_dir + str(_cmaps) + ".cmap"
+
+            # prev_icps = copy.deepcopy(pdb_profile_dict.get(pdb).icps_scores)
+            # prev_recall = copy.deepcopy(pdb_profile_dict.get(pdb).recall)
+            if os.path.exists(predicted_cmap) and os.path.exists(dimer_cmap_file_name):
+                transpose = False
+                chains = _cmaps.split("_")[-1]
+                temp_transpose_check =  str(temp_pdb_profile.chain_cluster.get(chains[0])) +str(temp_pdb_profile.chain_cluster.get(chains[1]))
+                if temp_transpose_check != dimer:
+                    transpose = True
+                a_icps_score = copy.deepcopy(
+                    eva_util.get_icps_score(_struct_cmap=dimer_cmap_file_name, _pred_cmap=predicted_cmap,_transpose=transpose))
+                temp_list_icps.append(a_icps_score)
+
+                a_recall_score = copy.deepcopy(
+                    eva_util.get_recall(_struct_cmap=dimer_cmap_file_name, _pred_cmap=predicted_cmap,_transpose=transpose))
+                temp_list_recall.append(a_recall_score)
+
+        if len(temp_icps_target) > 0:
+            temp_icps_target.update({dimer: np.max(temp_list_icps)})
+        else:
+            temp_icps_target[dimer] = np.max(temp_list_icps)
+
+        if len(temp_recall_target) > 0:
+            temp_recall_target.update({dimer: np.max(temp_list_recall)})
+        else:
+            temp_recall_target[dimer] = np.max(temp_list_recall)
+
+    pdb_profile_dict.get(pdb).icps_scores = temp_icps_target
+    pdb_profile_dict.get(pdb).recall = temp_recall_target
+
+print("HERE")
 # monomer_score_dict ={}
 # end_time_start = time.perf_counter()
 # print("recall and icps SCORING PART "+str(end_time_start-start)+"\n")

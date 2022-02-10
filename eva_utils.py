@@ -256,6 +256,13 @@ def chain_replacer (_pdb_file,_new_chain_name ):
     for value in _temp:
         value.chain = _new_chain_name
     return  _temp
+#
+# def if_transpose(__struct_cmap,__predict_cmap):
+#     s_len_a,s_len_b = __struct_cmap.shape
+#     p_len_a, p_len_b = __predict_cmap.shape
+#     if s_len_a == p_len_a and s
+#
+#
 
 
 def pdb_from_array(_pdb, _filename):
@@ -526,9 +533,13 @@ def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_p
                 return float(dock_q_score)
 
 
-def get_icps_score(_struct_cmap, _pred_cmap):
+def get_icps_score(_struct_cmap, _pred_cmap,_transpose):
     first_cmap_copy = np.loadtxt(_struct_cmap)
     second_cmap_copy = np.loadtxt(_pred_cmap)
+    if _transpose:
+        first_cmap_copy = np.transpose(first_cmap_copy)
+
+
     len_a, len_b = first_cmap_copy.shape
     icps_list = []
     con_number = int(min(len_b, len_a) / 5)
@@ -549,11 +560,12 @@ def show_cmap_image(data, _name):
     return
 
 
-def get_recall(_struct_cmap, _pred_cmap):
+def get_recall(_struct_cmap, _pred_cmap,_transpose):
     struct_cmap = np.loadtxt(_struct_cmap)
     pred_cmap = np.loadtxt(_pred_cmap)
     len_a, len_b = pred_cmap.shape
-    icps_list = []
+    if _transpose:
+        struct_cmap = np.transpose(struct_cmap)
     con_number = int(min(len_b, len_a) / 5)
     true_positive = 0
     s_len_a, s_len_b = struct_cmap.shape
