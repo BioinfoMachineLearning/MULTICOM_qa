@@ -26,6 +26,20 @@ stoichiometry = "A3B3C3"
 # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
 output_dir = "/home/bdmlab/multimer_test/output/"
 
+
+
+#
+#
+# monomer_sequences_dir = "/home/bdmlab/hetero_test/H1045_new/h1045_dummt.fasta"
+#
+# # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
+# input_dir = "/home/bdmlab/hetero_test/H1045_new/concatenated_pdb/"
+# stoichiometry = "A1B1"
+# # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
+# output_dir = "/home/bdmlab/hetero_test/H1045_new/output/"
+
+
+
 # monomer_sequences_dir = sys.argv[1]
 # # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
 # input_dir =sys.argv[2]
@@ -106,20 +120,20 @@ for true_squence in fasta_stoic_dict:
             if os.path.exists(monomer_pdb_name):
                 os.system("cp " + monomer_pdb_name + " " + current_dir_name)
 
-if not is_monomer_scoring_done:
-    ##################### MONOMER SCORING PART #################################
-    for chain_value in fasta_stoic_dict:
-        temp_chain_dir = predicted_monomer_chains_dir + "sequence_" + str(chain_value) + "/"
-        # print(predicted_monomer_dir + "/**/*"+"_chain_"+str(chain_value))
-        all_monomer_chained_files = glob.glob(predicted_monomer_dir + "/**/*" + "_chain_" + str(chain_value) + ".pdb",
-                                              recursive=True)
-        cmd = "perl " + PARIWISE_QA_SCRIPT + " " + temp_chain_dir + " " + fasta_dir + "sequence_" + str(
-            chain_value) + "_A.fasta" + " " + Q_SCORE + " " + TM_SCORE_PATH + " " + chain_value + " " + monomer_score_dir
-        print(cmd)
-        os.system(cmd)
-    #################### MONOMER SCORING PART #################################
-    end_time_start = time.perf_counter()
-    print("qA score time " + str(end_time_start - start) + "\n")
+
+##################### MONOMER SCORING PART #################################
+for chain_value in fasta_stoic_dict:
+    temp_chain_dir = predicted_monomer_chains_dir + "sequence_" + str(chain_value) + "/"
+    # print(predicted_monomer_dir + "/**/*"+"_chain_"+str(chain_value))
+    all_monomer_chained_files = glob.glob(predicted_monomer_dir + "/**/*" + "_chain_" + str(chain_value) + ".pdb",
+                                          recursive=True)
+    cmd = "perl " + PARIWISE_QA_SCRIPT + " " + temp_chain_dir + " " + fasta_dir + "sequence_" + str(
+        chain_value) + "_A.fasta" + " " + Q_SCORE + " " + TM_SCORE_PATH + " " + chain_value + " " + monomer_score_dir
+    print(cmd)
+    os.system(cmd)
+#################### MONOMER SCORING PART #################################
+end_time_start = time.perf_counter()
+print("qA score time " + str(end_time_start - start) + "\n")
 
 # ### WARNING
 # # removing unmapped files
@@ -266,45 +280,45 @@ for pdb in pdb_profile_dict:
 # #then run glinter
 # ####################ALREADY DONE CURRENTLY USING PRE_COMPUTED
 #####target  wise
-if not is_dimer_scoring_done:
-    for pdb in pdb_profile_dict:
-        print(pdb)
-        temp_pdb_profile = pdb_profile_dict.get(pdb)
-        a_dimer_score_dict = {}
-        #####possible dimer wise
 
-        for values in valid_dimer_combos:
-            print(values)
+for pdb in pdb_profile_dict:
+    print(pdb)
+    temp_pdb_profile = pdb_profile_dict.get(pdb)
+    a_dimer_score_dict = {}
+    #####possible dimer wise
 
-            # all_specific_dimer =glob.glob(dimer_strcutures_dir + "sequence_" + str(values) + "/*" + ".pdb",
-            #           recursive=True)
-            all_specific_dimer = eva_util.specific_filename_reader(
-                _input_dir=dimer_strcutures_dir + "sequence_" + str(values), _extension="pdb")
-            all_specific_target_dimer = eva_util.specific_filename_reader(
-                _input_dir=dimer_strcutures_dir + "sequence_" + str(values), _extension=pdb)
-            temp_same_dimer_wise = []
-            ##### same type of dimer wise
-            for first_chain in all_specific_target_dimer:
+    for values in valid_dimer_combos:
+        print(values)
 
-                temp_dimer_chain_wise = []
-                chain_first = dimer_strcutures_dir + "sequence_" + str(values) + "/" + str(first_chain) + ".pdb"
-                print(chain_first)
-                #####specific dimer wise
-                for predicted_dimer in all_specific_dimer:
-                    chain_second = dimer_strcutures_dir + "sequence_" + str(values) + "/" + predicted_dimer + ".pdb"
-                    print(chain_second)
-                    if chain_first != chain_second:
-                        temp_dimer_chain_wise.append(
-                            eva_util.get_dock_q_score(_true=chain_first, _current=chain_second))
-                temp_same_dimer_wise.append(np.average(temp_dimer_chain_wise))
-            if len(temp_same_dimer_wise) != 0:
-                a_dimer_score_dict[values] = np.max(temp_same_dimer_wise)
-            else:
-                a_dimer_score_dict[values] = 0
-        # else:
-        #     a_dimer_score_dict[values] = 0.0
-        pdb_profile_dict.get(pdb).ds_scores = a_dimer_score_dict
-    print("here")
+        # all_specific_dimer =glob.glob(dimer_strcutures_dir + "sequence_" + str(values) + "/*" + ".pdb",
+        #           recursive=True)
+        all_specific_dimer = eva_util.specific_filename_reader(
+            _input_dir=dimer_strcutures_dir + "sequence_" + str(values), _extension="pdb")
+        all_specific_target_dimer = eva_util.specific_filename_reader(
+            _input_dir=dimer_strcutures_dir + "sequence_" + str(values), _extension=pdb)
+        temp_same_dimer_wise = []
+        ##### same type of dimer wise
+        for first_chain in all_specific_target_dimer:
+
+            temp_dimer_chain_wise = []
+            chain_first = dimer_strcutures_dir + "sequence_" + str(values) + "/" + str(first_chain) + ".pdb"
+            print(chain_first)
+            #####specific dimer wise
+            for predicted_dimer in all_specific_dimer:
+                chain_second = dimer_strcutures_dir + "sequence_" + str(values) + "/" + predicted_dimer + ".pdb"
+                print(chain_second)
+                if chain_first != chain_second:
+                    temp_dimer_chain_wise.append(
+                        eva_util.get_dock_q_score(_true=chain_first, _current=chain_second))
+            temp_same_dimer_wise.append(np.average(temp_dimer_chain_wise))
+        if len(temp_same_dimer_wise) != 0:
+            a_dimer_score_dict[values] = np.max(temp_same_dimer_wise)
+        else:
+            a_dimer_score_dict[values] = 0
+    # else:
+    #     a_dimer_score_dict[values] = 0.0
+    pdb_profile_dict.get(pdb).ds_scores = a_dimer_score_dict
+print("here")
 # #load glinter cmap
 # end_time_start = time.perf_counter()
 # print("DS SCORING PART "+str(end_time_start-start)+"\n")
@@ -383,13 +397,19 @@ for pdb_values in pdb_profile_dict:
     # prev_ms_score = copy.deepcopy(pdb_profile_dict.get(pdb_values).ms_scores)
     temp_mono_score_dict = {}
     for values in fasta_stoic_dict:
-        a_monomer_score = monomer_score_dict.get(values).get(pdb_values)
-        temp_mono_score_dict[values] = a_monomer_score
+        temp_ms_chainwise = []
+        # a_monomer_score = monomer_score_dict.get(str(values)).get(pdb_values)
+        monomer_scores_targetwise = monomer_score_dict.get(str(values))
+        for ms in  monomer_scores_targetwise:
+            if pdb_values in ms:
+                temp_ms_chainwise.append(monomer_scores_targetwise.get(ms))
+
+        temp_mono_score_dict[values] = np.max(temp_ms_chainwise)
 
     pdb_profile_dict.get(pdb_values).ms_scores = temp_mono_score_dict
 
 print("here")
 #
-eva_util.print_final_data_new(_file_name="/home/bdmlab/result_time_test.csv",_file_data=pdb_profile_dict,_chain_data =fasta_stoic_dict,_dimer_data=valid_dimer_combos)
+eva_util.print_final_data_new(_file_name="/home/bdmlab/result_H1036_new.csv",_file_data=pdb_profile_dict,_chain_data =fasta_stoic_dict,_dimer_data=valid_dimer_combos)
 #
 # print("GRAND TOTAL TIME "+str(time.perf_counter()-total_time)+"\n")
