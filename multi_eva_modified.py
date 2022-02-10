@@ -10,8 +10,8 @@ import time
 import config as config_path
 import eva_utils
 
-is_monomer_scoring_done = True
-is_dimer_scoring_done = True
+is_monomer_scoring_done = False
+is_dimer_scoring_done = False
 PARIWISE_QA_SCRIPT = config_path.config.PARIWISE_QA_SCRIPT
 TM_SCORE_PATH = config_path.config.TM_SCORE_PATH
 Q_SCORE = config_path.config.Q_SCORE
@@ -342,15 +342,18 @@ for pdb in pdb_profile_dict:
             if os.path.exists(predicted_cmap) and os.path.exists(dimer_cmap_file_name):
                 transpose = False
                 chains = _cmaps.split("_")[-1]
-                temp_transpose_check =  str(temp_pdb_profile.chain_cluster.get(chains[0])) +str(temp_pdb_profile.chain_cluster.get(chains[1]))
+                temp_transpose_check = str(temp_pdb_profile.chain_cluster.get(chains[0])) + str(
+                    temp_pdb_profile.chain_cluster.get(chains[1]))
                 if temp_transpose_check != dimer:
                     transpose = True
                 a_icps_score = copy.deepcopy(
-                    eva_util.get_icps_score(_struct_cmap=dimer_cmap_file_name, _pred_cmap=predicted_cmap,_transpose=transpose))
+                    eva_util.get_icps_score(_struct_cmap=dimer_cmap_file_name, _pred_cmap=predicted_cmap,
+                                            _transpose=transpose))
                 temp_list_icps.append(a_icps_score)
 
                 a_recall_score = copy.deepcopy(
-                    eva_util.get_recall(_struct_cmap=dimer_cmap_file_name, _pred_cmap=predicted_cmap,_transpose=transpose))
+                    eva_util.get_recall(_struct_cmap=dimer_cmap_file_name, _pred_cmap=predicted_cmap,
+                                        _transpose=transpose))
                 temp_list_recall.append(a_recall_score)
 
         if len(temp_icps_target) > 0:
@@ -367,28 +370,26 @@ for pdb in pdb_profile_dict:
     pdb_profile_dict.get(pdb).recall = temp_recall_target
 
 print("HERE")
-# monomer_score_dict ={}
-# end_time_start = time.perf_counter()
-# print("recall and icps SCORING PART "+str(end_time_start-start)+"\n")
-# print("MONOMER SCORE  CALULCATOR")
-# #
-#
-# for monomers in all_chains_discovered:
-#     monomer_score_file =  monomer_score_dir+"/"+monomers+str(".tm")
-#     monomer_score_dict[monomers] = eva_util.read_monomer_score(_path = monomer_score_file)
+monomer_score_dict = {}
+
+for monomers in fasta_stoic_dict:
+    monomer_score_file = monomer_score_dir + "/" + str(monomers) + ".tm"
+    monomer_score_dict[monomers] = eva_util.read_monomer_score(_path=monomer_score_file)
 # print("FINAL SCORE  CALULCATOR")
-# for pdb_values in pdb_profile_dict:
-#     temp_pdb_profile = pdb_profile_dict.get(pdb_values)
-#     prev_ms_score = copy.deepcopy(pdb_profile_dict.get(pdb_values).ms_scores)
-#     mono_score_dict = {}
-#     for values in all_chains_discovered:
-#         a_monomer_score  =  monomer_score_dict.get(values).get(pdb_values)
-#         mono_score_dict[values]=a_monomer_score
+
+
+for pdb_values in pdb_profile_dict:
+    temp_pdb_profile = pdb_profile_dict.get(pdb_values)
+    # prev_ms_score = copy.deepcopy(pdb_profile_dict.get(pdb_values).ms_scores)
+    temp_mono_score_dict = {}
+    for values in fasta_stoic_dict:
+        a_monomer_score = monomer_score_dict.get(values).get(pdb_values)
+        temp_mono_score_dict[values] = a_monomer_score
+
+    pdb_profile_dict.get(pdb_values).ms_scores = temp_mono_score_dict
+
+print("here")
 #
-#     pdb_profile_dict.get(pdb_values).ms_scores = mono_score_dict
-#
-# print("here")
-#
-# eva_util.print_final_data(_file_name="/home/bdmlab/result_time_test.csv",_file_data=pdb_profile_dict,_chain_data =all_chains_discovered)
+eva_util.print_final_data_new(_file_name="/home/bdmlab/result_time_test.csv",_file_data=pdb_profile_dict,_chain_data =fasta_stoic_dict,_dimer_data=valid_dimer_combos)
 #
 # print("GRAND TOTAL TIME "+str(time.perf_counter()-total_time)+"\n")

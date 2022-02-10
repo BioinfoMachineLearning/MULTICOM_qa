@@ -542,7 +542,7 @@ def get_icps_score(_struct_cmap, _pred_cmap,_transpose):
 
     len_a, len_b = first_cmap_copy.shape
     icps_list = []
-    con_number = int(min(len_b, len_a) / 5)
+    con_number = np.count_nonzero(first_cmap_copy)
     for i in range(con_number):
         (x, y) = np.unravel_index(np.argmax(first_cmap_copy, axis=None), first_cmap_copy.shape)
         first_cmap_copy[x][y] = 0
@@ -657,6 +657,83 @@ def print_final_data(_file_name, _file_data, _chain_data):
         data_row.append([values, get_preci_val(ms), get_preci_val(ds), get_preci_val(is_c), get_preci_val(rec),
                          get_preci_val(final_score)])
     head_row = ['Name', 'Monomer_score', 'Dimer_score', 'ICP_score', 'recall_score', 'final_score']
+    report_individual_target(_header_row=head_row, _file_name=_file_name, _data_array=data_row)
+
+def get_header_string (_stoic,_dimer):
+    head_string = ["Name"]
+    for monomer in _stoic:
+        head_string.append("MS_"+str(monomer))
+
+    for _dimers in _dimer:
+        head_string.append("DS_"+str(_dimers))
+
+    for _dimers in _dimer:
+        head_string.append("ICPS_"+str(_dimers))
+
+    for _dimers in _dimer:
+        head_string.append( "R_"+str(_dimers))
+
+    head_string.append("Final_score")
+    return head_string
+
+
+def print_final_data_new(_file_name, _file_data, _chain_data,_dimer_data):
+    _data_array = []
+    all_chains_discovered = copy.deepcopy(_chain_data)
+    dimer_interaction_discover = copy.deepcopy(_dimer_data)
+    file_data = copy.deepcopy(_file_data)
+    row_string = ""
+    data_row = []
+    for values in file_data:
+        temp = file_data.get(values)
+        temp_ms_score = []
+        temp_icps = []
+        temp_recall = []
+        temp_ds_score = []
+        total_values = [ ]
+        # total_values.append(values)
+        for monomers in all_chains_discovered:
+            if temp.ms_scores.get(monomers) != None:
+                temp_ms_score.append(float(temp.ms_scores.get(monomers)))
+                total_values.append(float(temp.ms_scores.get(monomers)))
+            else:
+                temp_ms_score.append(0)
+                total_values.append(0)
+        # ms = replace_nan(temp_ms_score)
+
+        for dimers in dimer_interaction_discover:
+            if temp.ds_scores.get(dimers) != None:
+                temp_ds_score.append(temp.ds_scores.get(dimers))
+                total_values.append(float(temp.ds_scores.get(dimers)))
+            else:
+                total_values.append(0)
+                temp_ds_score.append(0)
+        # ds = replace_nan(temp_ds_score)
+
+        for dimers in dimer_interaction_discover:
+            if temp.icps_scores.get(dimers) != None:
+                temp_icps.append(temp.icps_scores.get(dimers))
+                total_values.append(temp.icps_scores.get(dimers))
+            else:
+                total_values.append(0)
+                temp_icps.append(0)
+
+        for dimers in dimer_interaction_discover:
+            if temp.recall.get(dimers) != None:
+                temp_recall.append(temp.recall.get(dimers))
+                total_values.append(temp.recall.get(dimers))
+            else:
+                total_values.append(0)
+                temp_recall.append(0)
+            # temp_recall.append(temp.recall.get(dimers))
+        final_score = np.average(total_values)
+        total_values.append(final_score)
+
+
+        data_row.append([values]+total_values)
+
+    head_row = get_header_string(_chain_data, _dimer_data)
+    # head_row = ['Name', 'Monomer_score', 'Dimer_score', 'ICP_score', 'recall_score', 'final_score']
     report_individual_target(_header_row=head_row, _file_name=_file_name, _data_array=data_row)
 
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/test/.cmap"))
