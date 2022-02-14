@@ -104,6 +104,7 @@ class predicted_pdb_profile:
     # Recall
     name = ""
     dimers = []
+    multimer_scoring = 0.0
     monomers_chains = []
     chain_skeleton_CA = []
     chain_fasta = []
@@ -302,6 +303,24 @@ def fix_serial(_array, _no=1):
         x.serial = number
         number = number + 1
     return _array
+
+
+MM_ALIGN_PATH = "/home/bdmlab/Documents/tools/MMalign"
+def get_MM_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
+                     _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb"):
+    print(_true)
+    print(_current)
+    contents = subprocess.check_output([MM_ALIGN_PATH, _true, _current])
+    tm_list  = []
+
+    for item in contents.decode("utf-8").split("\n"):
+
+        if "TM-score=" in item:
+
+            tm_list.append( float(item.strip().split(" ")[1].strip()))
+
+
+    return np.min(tm_list)
 
 
 def correct_format(_pdb_row):
@@ -738,3 +757,4 @@ def print_final_data_new(_file_name, _file_data, _chain_data,_dimer_data):
 
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/test/.cmap"))
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/true/.cmap"))
+get_MM_score()

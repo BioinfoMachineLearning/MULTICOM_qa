@@ -93,6 +93,14 @@ for pdb in predicted_pdb_files:
     temp_predicted_pdb_profile.chain_fasta = all_pdb_chain
     pdb_profile_dict[pdb] = temp_predicted_pdb_profile
 
+for pdb_1 in predicted_pdb_files:
+    temp_MM_score = []
+    for pdb_2 in predicted_pdb_files:
+        if pdb_1 != pdb_2:
+            mm_valie = eva_util.get_MM_score(input_dir+"/"+pdb_1,input_dir+"/"+pdb_2)
+            temp_MM_score.append(mm_valie)
+    pdb_profile_dict.get(pdb_1).multimer_scoring = np.average(temp_MM_score)
+
 #######chain cluster mapper
 for pdb in pdb_profile_dict:
     temp_predicted_pdb_profile = copy.deepcopy(pdb_profile_dict.get(pdb))
