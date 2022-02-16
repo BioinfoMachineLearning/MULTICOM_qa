@@ -24,12 +24,7 @@ pdb_profile_dict = {}
 eva_utils.check_path_exists(PARIWISE_QA_SCRIPT, TM_SCORE_PATH, Q_SCORE, DOCK_Q_PATH, MM_ALIGN, GLINTER_DIR)
 import eva_utils as eva_util
 
-# monomer_sequences_dir = "/home/bdmlab/multimer_test/input/H1036.fasta"
-# # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
-# input_dir = "/home/bdmlab/multimer_test/input/H1036/"
-# stoichiometry = "A3B3C3"
-# # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
-# output_dir = "/home/bdmlab/multimer_test/output/"
+
 
 # monomer_sequences_dir = "/home/bdmlab/T1016.fasta"
 # # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
@@ -38,6 +33,15 @@ import eva_utils as eva_util
 # # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
 # output_dir = "/home/bdmlab/T1016_test_2/"
 # predicted_structures = "/home/bdmlab/af2/"
+#python multi_eva_modified.py ../data/fasta_casp14/casp_capri_fasta/T1032.fasta /home/rsr3gt/programs/Multi_Eva/Multimet_evatest_samples/predictions/T1032_lite/ A2 /home/rsr3gt/programs/Multi_Eva/data/pdbs_casp_alphafold/T1032/ /home/rsr3gt/programs/Multi_Eva/output/Qs_T1032/
+
+
+#
+# monomer_sequences_dir = "/home/bdmlab/T1032.fasta"
+# input_dir ="/home/bdmlab/new_tests/pred/"
+# stoichiometry = "A2"
+# predicted_structures = "/home/bdmlab/T1032/"
+# output_dir = "/home/bdmlab/new_tests/"
 
 
 monomer_sequences_dir = sys.argv[1]
@@ -67,13 +71,6 @@ print("output file : " + str(output_dir))
 # # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
 # output_dir = "/home/bdmlab/hetero_test/H1045_new/output/"
 
-
-# monomer_sequences_dir = sys.argv[1]
-# # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
-# input_dir =sys.argv[2]
-# stoichiometry = sys.argv[3]
-# # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
-# output_dir = sys.argv[4]
 
 
 TARGET_NAME = os.path.basename(monomer_sequences_dir).replace(".fasta", "")
@@ -141,13 +138,13 @@ for pdb in predicted_pdb_files:
 print(" Ended seperating of Chains")
 print("Multimer scoring started")
 for pdb_1 in predicted_pdb_files:
-    print(pdb_1)
+    # print(pdb_1)
     temp_MM_score = []
     for pdb_2 in predicted_pdb_files:
         if pdb_1 != pdb_2:
             mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
             temp_MM_score.append(mm_valie)
-    print(str(np.average(temp_MM_score)))
+    # print(str(np.average(temp_MM_score)))
     pdb_profile_dict.get(pdb_1).multimer_scoring = np.average(temp_MM_score)
 print("Multimer scoring Done")
 print("Mapping chains to clusters")
@@ -159,12 +156,12 @@ for pdb in pdb_profile_dict:
     temp_cluster_chain = {}
     for values in temp_predicted_pdb_profile.chain_fasta:
         temp = eva_util.sequence_finder(fasta_stoic_dict, temp_predicted_pdb_profile.chain_fasta.get(values))
-        temp_chain_cluster[values] = temp
-        if temp_cluster_chain.get(temp) != None:
-            temp_cluster_chain[temp].append(values)
+        temp_chain_cluster[values] = str(temp)
+        if temp_cluster_chain.get(str(temp)) != None:
+            temp_cluster_chain[str(temp)].append(values)
             # update
         else:
-            temp_cluster_chain[temp] = [values]
+            temp_cluster_chain[str(temp)] = [values]
 
     pdb_profile_dict.get(pdb).chain_cluster = copy.deepcopy(temp_chain_cluster)
     pdb_profile_dict.get(pdb).cluster_chain = copy.deepcopy(temp_cluster_chain)
@@ -227,13 +224,13 @@ for pdb in pdb_profile_dict:
     temp_all_dimer_combination = copy.deepcopy(all_dimer_combination)
     for dimers in all_dimer_combination:
         if dimers[0] == dimers[1]:
-            len_a_dimers = len(temp.cluster_chain.get(dimers[0]))
+            len_a_dimers = len(temp.cluster_chain.get(str(dimers[0])))
             if len_a_dimers == 1:
                 temp_all_dimer_combination.remove(dimers)
 
     for dimers in temp_all_dimer_combination:
-        first_chain_list = temp.cluster_chain.get(dimers[0])
-        second_chain_list = temp.cluster_chain.get(dimers[1])
+        first_chain_list = temp.cluster_chain.get(str(dimers[0]))
+        second_chain_list = temp.cluster_chain.get(str(dimers[1]))
         for first_chain in first_chain_list:
             for second_chain in second_chain_list:
                 if first_chain != second_chain:
