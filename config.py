@@ -18,7 +18,7 @@ class config:
         GLINTER_DIR = "/home/bdmlab/anaconda3/envs/multi_eva/"
         DOCK_Q_PATH = "/home/bdmlab/Documents/DockQ/DockQ.py"
     elif "Lily" == DEVICE:
-        PARIWISE_QA_SCRIPT = "/home/bdmlab/pairwise_model_eva.pl"
+        PARIWISE_QA_SCRIPT = "/home/rsr3gt/programs/tools/pairwise_model_eva.pl"
         Q_SCORE = "/home/rsr3gt/programs/tools/pairwiseQA/q_score"
         TM_SCORE_PATH = "/home/rsr3gt/programs/tools/TMscore"
         MM_ALIGN_PATH = "/home/rsr3gt/programs/tools/MMalign"
