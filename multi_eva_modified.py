@@ -338,7 +338,7 @@ for _pred_cmap_candidate in valid_dimer_combos:
     if not os.path.exists(expected_cmaps_name):
         print("expected_cmaps " + str(expected_cmaps_name) + " not found \n")
         print("predicting the interactions \n")
-        eva_utils.glinter_runner(first_chain, second_chain, extra_cmaps, _is_homodimer, GLINTER_DIR)
+        eva_utils.glinter_runner(first_chain, second_chain, extra_cmaps, _is_homodimer, expected_cmaps_name,GLINTER_DIR)
     else:
         print("expected_cmaps " + str(expected_cmaps_name) + " found \n")
 #

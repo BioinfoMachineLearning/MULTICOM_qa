@@ -552,8 +552,8 @@ def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_p
 
 def get_icps_score(_struct_cmap, _pred_cmap,_transpose):
     first_cmap_copy = np.loadtxt(_struct_cmap)
-    # second_cmap_copy = np.loadtxt(_pred_cmap)
-    second_cmap_copy = np.load(_pred_cmap, allow_pickle=True)
+    second_cmap_copy = np.loadtxt(_pred_cmap)
+    # second_cmap_copy = np.load(_pred_cmap, allow_pickle=True)
     if _transpose:
         first_cmap_copy = np.transpose(first_cmap_copy)
 
@@ -580,8 +580,8 @@ def show_cmap_image(data, _name):
 
 def get_recall(_struct_cmap, _pred_cmap,_transpose):
     struct_cmap = np.loadtxt(_struct_cmap)
-    # pred_cmap = np.loadtxt(_pred_cmap)
-    pred_cmap = np.load(_pred_cmap, allow_pickle=True)
+    pred_cmap = np.loadtxt(_pred_cmap)
+    # pred_cmap = np.load(_pred_cmap, allow_pickle=True)
     len_a, len_b = pred_cmap.shape
     if _transpose:
         struct_cmap = np.transpose(struct_cmap)
@@ -769,7 +769,7 @@ def print_final_data_new(_file_name, _file_data, _chain_data,_dimer_data):
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/test/.cmap"))
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/true/.cmap"))
 # GLINTER_DIR ="/home/rsr3gt/anaconda3/envs/multi_eva/"
-def glinter_runner(_first_pdb,_second_pdb,_out_dir,_is_homodimer,_glinter):
+def glinter_runner(_first_pdb,_second_pdb,_out_dir,_is_homodimer,expected_cmaps_name,_glinter):
     GLINTER_DIR = _glinter
     envs = GLINTER_DIR+"/scripts/set_env.sh"
     os.system("source "+str(envs))
@@ -787,7 +787,9 @@ def glinter_runner(_first_pdb,_second_pdb,_out_dir,_is_homodimer,_glinter):
 
     if os.path.exists(cmap_file):
         dest_file  = _out_dir.replace("extras/","")+name+".cmap"
-        cmd=  "cp "+cmap_file+" "+dest_file
+
+        np.savetxt(expected_cmaps_name,dest_file)
+        # cmd=  "cp "+cmap_file+" "+dest_file
         os.system(cmd)
 
     return
