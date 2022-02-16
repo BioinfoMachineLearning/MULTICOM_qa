@@ -42,8 +42,8 @@ import eva_utils as eva_util
 # stoichiometry = "A2"
 # predicted_structures = "/home/bdmlab/T1032/"
 # output_dir = "/home/bdmlab/new_tests/"
-
-
+# predicted_structures_AF2 = "/home/bdmlab/T1032/"
+#
 monomer_sequences_dir = sys.argv[1]
 input_dir = sys.argv[2]
 stoichiometry = sys.argv[3]
@@ -369,14 +369,19 @@ for pdb in pdb_profile_dict:
 
             temp_dimer_chain_wise = []
             chain_first = dimer_strcutures_dir + "sequence_" + str(values) + "/" + str(first_chain) + ".pdb"
-            print(chain_first)
+            # print(chain_first)
             #####specific dimer wise
             for predicted_dimer in all_specific_dimer:
                 chain_second = dimer_strcutures_dir + "sequence_" + str(values) + "/" + predicted_dimer + ".pdb"
-                print(chain_second)
+                # print(chain_second)
                 if chain_first != chain_second:
-                    temp_dimer_chain_wise.append(
-                        eva_util.get_dock_q_score(_true=chain_first, _current=chain_second, _DOCK_Q_PATH=DOCK_Q_PATH))
+                    print(pdb)
+                    try:
+                        temp_dimer_chain_wise.append(
+                            eva_util.get_dock_q_score(_true=chain_first, _current=chain_second, _DOCK_Q_PATH=DOCK_Q_PATH))
+                    except:
+                        temp_dimer_chain_wise.append(0)
+
             temp_same_dimer_wise.append(np.average(temp_dimer_chain_wise))
         if len(temp_same_dimer_wise) != 0:
             a_dimer_score_dict[values] = np.max(temp_same_dimer_wise)
