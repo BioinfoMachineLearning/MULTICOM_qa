@@ -141,16 +141,19 @@ for pdb in predicted_pdb_files:
 print(" Ended seperating of Chains")
 print("Multimer scoring started")
 for pdb_1 in predicted_pdb_files:
+    print(pdb_1)
     temp_MM_score = []
     for pdb_2 in predicted_pdb_files:
         if pdb_1 != pdb_2:
             mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
             temp_MM_score.append(mm_valie)
+    print(str(np.average(temp_MM_score)))
     pdb_profile_dict.get(pdb_1).multimer_scoring = np.average(temp_MM_score)
 print("Multimer scoring Done")
 print("Mapping chains to clusters")
 #######chain cluster mapper
 for pdb in pdb_profile_dict:
+    print(pdb)
     temp_predicted_pdb_profile = copy.deepcopy(pdb_profile_dict.get(pdb))
     temp_chain_cluster = {}
     temp_cluster_chain = {}
