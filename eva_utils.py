@@ -64,8 +64,8 @@ def find_lowest_gap(_target, _hit):
     aln_val = pairwise2.align.globalms(_target, _hit, 5, -4, -1, -0.1)
     chain_target = list(aln_val[0][0])
     chain_hit = list(aln_val[0][1])
-    print(chain_target)
-    print(chain_hit)
+    # print(chain_target)
+    # print(chain_hit)
 
     return chain_hit.count('-')
 

@@ -148,7 +148,7 @@ print("Multimer scoring Done")
 print("Mapping chains to clusters")
 #######chain cluster mapper
 for pdb in pdb_profile_dict:
-    print(pdb)
+    # print(pdb)
     temp_predicted_pdb_profile = copy.deepcopy(pdb_profile_dict.get(pdb))
     temp_chain_cluster = {}
     temp_cluster_chain = {}
@@ -376,7 +376,7 @@ for pdb in pdb_profile_dict:
                 print(chain_second)
                 if chain_first != chain_second:
                     temp_dimer_chain_wise.append(
-                        eva_util.get_dock_q_score(_true=chain_first, _current=chain_second), DOCK_Q_PATH)
+                        eva_util.get_dock_q_score(_true=chain_first, _current=chain_second, _DOCK_Q_PATH=DOCK_Q_PATH))
             temp_same_dimer_wise.append(np.average(temp_dimer_chain_wise))
         if len(temp_same_dimer_wise) != 0:
             a_dimer_score_dict[values] = np.max(temp_same_dimer_wise)
