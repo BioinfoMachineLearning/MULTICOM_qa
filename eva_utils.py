@@ -304,11 +304,11 @@ def fix_serial(_array, _no=1):
     return _array
 
 
-MM_ALIGN_PATH = "/home/bdmlab/Documents/tools/MMalign"
+# MM_ALIGN_PATH = "/home/bdmlab/Documents/tools/MMalign"
 def get_MM_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
-                     _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb"):
-    print(_true)
-    print(_current)
+                     _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb",_MM_ALIGN="/home/bdmlab/Documents/tools/MMalign"):
+
+    MM_ALIGN_PATH = _MM_ALIGN
     contents = subprocess.check_output([MM_ALIGN_PATH, _true, _current])
     tm_list  = []
 
@@ -534,13 +534,12 @@ def get_CA_cmaps(_first_chain, _second_chain):
     return cmap_array
 
 
-DOCK_Q_PATH = "/home/bdmlab/Documents/DockQ/DockQ.py"
+# DOCK_Q_PATH = "/home/bdmlab/Documents/DockQ/DockQ.py"
 
 
 def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
-                     _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb"):
-    print(_true)
-    print(_current)
+                     _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb",_DOCK_Q_PATH = "/home/bdmlab/Documents/DockQ/DockQ.py"):
+    DOCK_Q_PATH  = _DOCK_Q_PATH
     contents = subprocess.check_output([DOCK_Q_PATH, _true, _current])
     dock_q_score = 0
     for item in contents.decode("utf-8").split("\n"):
@@ -767,8 +766,9 @@ def print_final_data_new(_file_name, _file_data, _chain_data,_dimer_data):
 
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/test/.cmap"))
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/true/.cmap"))
-GLINTER_DIR ="/home/rsr3gt/anaconda3/envs/multi_eva/"
-def glinter_runner(_first_pdb,_second_pdb,_out_dir,_is_homodimer):
+# GLINTER_DIR ="/home/rsr3gt/anaconda3/envs/multi_eva/"
+def glinter_runner(_first_pdb,_second_pdb,_out_dir,_is_homodimer,_glinter):
+    GLINTER_DIR = _glinter
     envs = GLINTER_DIR+"/scripts/set_env.sh"
     os.system("source "+str(envs))
     name_1_list = os.path.basename(_second_pdb).split(".")[0]
@@ -787,5 +787,7 @@ def glinter_runner(_first_pdb,_second_pdb,_out_dir,_is_homodimer):
         dest_file  = _out_dir.replace("extras/","")+name+".cmap"
         cmd=  "cp "+cmap_file+" "+dest_file
         os.system(cmd)
+
+    return
 
 

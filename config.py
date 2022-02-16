@@ -10,13 +10,17 @@ class config:
         TM_SCORE_PATH = "/home/rajroy/Downloads/tools/TMscore"
         MM_ALIGN_PATH = "/home/bdmlab/Documents/tools/MMalign"
     elif "home_pc" == DEVICE:
+        print("home_pc")
         PARIWISE_QA_SCRIPT = "/home/bdmlab/pairwise_model_eva.pl"
         Q_SCORE = "/home/bdmlab/pairwiseQA/q_score"
         TM_SCORE_PATH = "/home/bdmlab/Documents/tools/TMscore"
         MM_ALIGN_PATH = "/home/bdmlab/Documents/tools/MMalign"
+        GLINTER_DIR = "/home/bdmlab/anaconda3/envs/multi_eva/"
+        DOCK_Q_PATH = "/home/bdmlab/Documents/DockQ/DockQ.py"
     elif "Lily" == DEVICE:
         PARIWISE_QA_SCRIPT = "/home/bdmlab/pairwise_model_eva.pl"
-        Q_SCORE = "/home/bdmlab/pairwiseQA/q_score"
-        TM_SCORE_PATH = "/home/bdmlab/Documents/tools/TMscore"
-        MM_ALIGN_PATH = "/home/bdmlab/Documents/tools/MMalign"
-
+        Q_SCORE = "/home/rsr3gt/programs/tools/pairwiseQA/q_score"
+        TM_SCORE_PATH = "/home/rsr3gt/programs/tools/TMscore"
+        MM_ALIGN_PATH = "/home/rsr3gt/programs/tools/MMalign"
+        GLINTER_DIR = "/home/rsr3gt/programs/glinter/"
+        DOCK_Q_PATH = "/home/rsr3gt/programs/tools/DockQ/DockQ.py"

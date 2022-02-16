@@ -16,6 +16,9 @@ is_dimer_scoring_done = False
 PARIWISE_QA_SCRIPT = config_path.config.PARIWISE_QA_SCRIPT
 TM_SCORE_PATH = config_path.config.TM_SCORE_PATH
 Q_SCORE = config_path.config.Q_SCORE
+DOCK_Q_PATH = config_path.config.DOCK_Q_PATH
+MM_ALIGN = config_path.config.MM_ALIGN_PATH
+GLINTER_DIR = config_path.config.GLINTER_DIR
 total_time = time.perf_counter()
 pdb_profile_dict = {}
 
@@ -28,14 +31,21 @@ import eva_utils as eva_util
 # # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
 # output_dir = "/home/bdmlab/multimer_test/output/"
 
+# monomer_sequences_dir = "/home/bdmlab/T1016.fasta"
+# # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
+# input_dir = "/home/bdmlab/T1016/T1016_pred_lite/"
+# stoichiometry = "A2"
+# # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
+# output_dir = "/home/bdmlab/T1016_test_2/"
+# predicted_structures = "/home/bdmlab/af2/"
 
-monomer_sequences_dir = "/home/bdmlab/T1016.fasta"
-# input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
-input_dir = "/home/bdmlab/T1016/T1016_pred_lite/"
-stoichiometry = "A2"
-# output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
-output_dir = "/home/bdmlab/T1016_test_2/"
-predicted_structures = "/home/bdmlab/af2/"
+
+monomer_sequences_dir = sys.argv[1]
+input_dir = sys.argv[2]
+stoichiometry = sys.argv[3]
+predicted_structures = sys.argv[4]
+output_dir = sys.argv[5]
+
 
 #
 #
@@ -119,7 +129,7 @@ for pdb_1 in predicted_pdb_files:
     temp_MM_score = []
     for pdb_2 in predicted_pdb_files:
         if pdb_1 != pdb_2:
-            mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2)
+            mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2,MM_ALIGN)
             temp_MM_score.append(mm_valie)
     pdb_profile_dict.get(pdb_1).multimer_scoring = np.average(temp_MM_score)
 
@@ -333,7 +343,7 @@ for _pred_cmap_candidate in valid_dimer_combos:
     if not os.path.exists(expected_cmaps_name):
         print("expected_cmaps " + str(expected_cmaps_name) + " not found \n")
         print("predicting the interactions \n")
-        eva_utils.glinter_runner(first_chain, second_chain, extra_cmaps, _is_homodimer)
+        eva_utils.glinter_runner(first_chain, second_chain, extra_cmaps, _is_homodimer,GLINTER_DIR)
     else:
         print("expected_cmaps " + str(expected_cmaps_name) + " found \n")
 #
@@ -370,7 +380,7 @@ for pdb in pdb_profile_dict:
                 print(chain_second)
                 if chain_first != chain_second:
                     temp_dimer_chain_wise.append(
-                        eva_util.get_dock_q_score(_true=chain_first, _current=chain_second))
+                        eva_util.get_dock_q_score(_true=chain_first, _current=chain_second),DOCK_Q_PATH)
             temp_same_dimer_wise.append(np.average(temp_dimer_chain_wise))
         if len(temp_same_dimer_wise) != 0:
             a_dimer_score_dict[values] = np.max(temp_same_dimer_wise)
