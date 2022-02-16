@@ -792,4 +792,23 @@ def glinter_runner(_first_pdb,_second_pdb,_out_dir,_is_homodimer,_glinter):
 
     return
 
+def check_single_exists(_file):
+    if os.path.exists(_file):
+        return True
+    else:
+        print("This file is missing" + str(_file))
+        return False
+
+
+def check_path_exists(_PARIWISE_QA_SCRIPT ,_TM_SCORE_PATH,_Q_SCORE ,_DOCK_Q_PATH,_MM_ALIGN ,_GLINTER_DIR ):
+    print(_PARIWISE_QA_SCRIPT)
+    print(_TM_SCORE_PATH)
+    print(_Q_SCORE)
+    print(_DOCK_Q_PATH)
+    print(_MM_ALIGN)
+    print(_GLINTER_DIR)
+    if check_single_exists(_PARIWISE_QA_SCRIPT) and check_single_exists(_TM_SCORE_PATH) and check_single_exists(  _Q_SCORE) and check_single_exists(_DOCK_Q_PATH) and check_single_exists(_MM_ALIGN) and check_single_exists(_GLINTER_DIR):
+        return True
+    else:
+        return False
 

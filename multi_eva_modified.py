@@ -21,7 +21,7 @@ MM_ALIGN = config_path.config.MM_ALIGN_PATH
 GLINTER_DIR = config_path.config.GLINTER_DIR
 total_time = time.perf_counter()
 pdb_profile_dict = {}
-
+eva_utils.check_path_exists(PARIWISE_QA_SCRIPT, TM_SCORE_PATH, Q_SCORE, DOCK_Q_PATH, MM_ALIGN, GLINTER_DIR)
 import eva_utils as eva_util
 
 # monomer_sequences_dir = "/home/bdmlab/multimer_test/input/H1036.fasta"
@@ -46,6 +46,16 @@ stoichiometry = sys.argv[3]
 predicted_structures = sys.argv[4]
 output_dir = sys.argv[5]
 
+if os.path.isfile(monomer_sequences_dir):
+    print(str(monomer_sequences_dir) + " Found")
+if os.path.exists(input_dir):
+    print(str(input_dir) + " Found")
+print("stoichiometry " + str(stoichiometry))
+if os.path.exists(predicted_structures):
+    print(str(predicted_structures) + " Found")
+if os.path.exists(predicted_structures):
+    print(str(predicted_structures) + " Found")
+print("output file : " + str(output_dir))
 
 #
 #
@@ -81,12 +91,14 @@ for values in pred_structures:
     temp_fasta_values = eva_utils.get_fasta_from_pdb_array(
         eva_utils.contents_to_info(eva_utils.read_pdb(predicted_structures + values + ".pdb")))
     temp_seq = eva_util.sequence_finder(_seq_fasta_dict=fasta_stoic_dict, _fasta_string=temp_fasta_values)
-    cmd = "cp "+predicted_structures+str(values)+".pdb "+str(predicted_monomer_dir)+"/sequence_"+str(temp_seq)+"_A.pdb"
+    cmd = "cp " + predicted_structures + str(values) + ".pdb " + str(predicted_monomer_dir) + "/sequence_" + str(
+        temp_seq) + "_A.pdb"
     os.system(cmd)
+    print(cmd)
     cmd = "cp " + predicted_structures + str(values) + ".pdb " + str(predicted_monomer_dir) + "/sequence_" + str(
         temp_seq) + "_B.pdb"
     os.system(cmd)
-    print()
+    print(cmd)
 
 stoi_details = eva_util.get_stoichiometry_details(stoichiometry)
 predicted_pdb_files = eva_util.specific_filename_reader(input_dir, "")
@@ -94,6 +106,7 @@ TOTAL_SUBMISSION = len(predicted_pdb_files)
 predicted_monomer_dir = eva_utils.dir_maker(output_dir + "monomer/")
 all_chains_discovered = []
 start = time.perf_counter()
+print("number of pdb is " + str(len(predicted_pdb_files)))
 for monomer in predicted_pdb_files:
     temp_monomer_name = input_dir + monomer
     for values in eva_util.monomer_pdb_filtering(_pdb=temp_monomer_name, _dir=predicted_monomer_dir):
@@ -104,6 +117,7 @@ all_chains_discovered = list(dict.fromkeys(all_chains_discovered))
 # print(all_chains_discovered)
 all_monomer_files = []
 predicted_monomer_chains_dir = eva_utils.dir_maker(output_dir + "monomer_chains/")
+print(" Started seperating of Chains")
 for pdb in predicted_pdb_files:
     temp_predicted_pdb_profile = eva_util.predicted_pdb_profile()
     temp_predicted_pdb_profile.monomers_chains = []
@@ -124,15 +138,17 @@ for pdb in predicted_pdb_files:
     temp_predicted_pdb_profile.chain_skeleton_CA = all_pdb_skeleton
     temp_predicted_pdb_profile.chain_fasta = all_pdb_chain
     pdb_profile_dict[pdb] = temp_predicted_pdb_profile
-
+print(" Ended seperating of Chains")
+print("Multimer scoring started")
 for pdb_1 in predicted_pdb_files:
     temp_MM_score = []
     for pdb_2 in predicted_pdb_files:
         if pdb_1 != pdb_2:
-            mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2,MM_ALIGN)
+            mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
             temp_MM_score.append(mm_valie)
     pdb_profile_dict.get(pdb_1).multimer_scoring = np.average(temp_MM_score)
-
+print("Multimer scoring Done")
+print("Mapping chains to clusters")
 #######chain cluster mapper
 for pdb in pdb_profile_dict:
     temp_predicted_pdb_profile = copy.deepcopy(pdb_profile_dict.get(pdb))
@@ -149,7 +165,9 @@ for pdb in pdb_profile_dict:
 
     pdb_profile_dict.get(pdb).chain_cluster = copy.deepcopy(temp_chain_cluster)
     pdb_profile_dict.get(pdb).cluster_chain = copy.deepcopy(temp_cluster_chain)
+print("Mapping of chains to clusters has been done")
 #######NOW PUT ALL OF THEM IN ONE DIR OF MONOMER
+print("Monomer scoring started")
 for true_squence in fasta_stoic_dict:
     current_dir_name = predicted_monomer_chains_dir + "/sequence_" + str(true_squence) + "/"
     eva_util.dir_maker(current_dir_name)
@@ -170,42 +188,22 @@ for chain_value in fasta_stoic_dict:
         chain_value) + "_A.fasta" + " " + Q_SCORE + " " + TM_SCORE_PATH + " " + chain_value + " " + monomer_score_dir
     print(cmd)
     os.system(cmd)
+print("Monomer scoring started")
 #################### MONOMER SCORING PART #################################
 end_time_start = time.perf_counter()
 print("qA score time " + str(end_time_start - start) + "\n")
-
-# ### WARNING
-# # removing unmapped files
-# modified_all_chains_discovered= copy.deepcopy(all_chains_discovered)
-# for values in modified_all_chains_discovered :
-#     if  a_multimer.chain_fasta.get(values) == None:
-#         all_chains_discovered.remove(values)
-#
-#
-# start = time.perf_counter()
-#
-#
-# # ALL CHAINS CA
-# start = time.perf_counter()
-
-
 for pdb in predicted_pdb_files:
-    # temp_predicted_pdb_profile = eva_util.predicted_pdb_profile()
-    # temp_predicted_pdb_profile.monomers_chains = []
     all_pdb_skeleton = {}
-    # temp_predicted_pdb_profile.name = pdb
     for monomer_chain in pdb_profile_dict.get(pdb).monomers_chains:
         a_monomer_chain_skeleton = predicted_monomer_dir + str(pdb) + "/" + str(
             pdb) + "_chain_" + monomer_chain + ".pdb"
         if os.path.exists(a_monomer_chain_skeleton):
-            # temp_predicted_pdb_profile.monomers_chains.append(copy.deepcopy(monomer_chain))
             monomer_chain_skeleton = eva_util.read_skeleton(a_monomer_chain_skeleton)
             all_pdb_skeleton[monomer_chain] = monomer_chain_skeleton
-    # temp_predicted_pdb_profile.chain_skeleton_CA = all_pdb_skeleton
     pdb_profile_dict[pdb].chain_skeleton_CA = all_pdb_skeleton
 
 all_true_sequence = fasta_stoic_dict.keys()
-
+print("Monomer scoring Ended")
 #
 #
 # #### 1 #### FIND COMBINATION of all PAIRS
@@ -256,6 +254,7 @@ for pdb in pdb_profile_dict:
 #################chain_hit.count('-')
 all_pdb_dimers_contact = list(dict.fromkeys(all_pdb_dimers_contact))
 valid_dimer_in_contact = []
+print("Finding the valide dimers")
 for values in all_pdb_dimers_contact:
     temp_arr = values.split("_")
     valid_dimer_in_contact.append(temp_arr[len(temp_arr) - 1])
@@ -267,11 +266,7 @@ for _pdbs in all_dimer_combination:
     dimer_treshold_consideration = int(len(pdb_profile_dict) * 0.2)
     if number >= dimer_treshold_consideration:
         valid_dimer_combos.append(str_pdb)
-
-print("here")
-
-
-
+print("Completed looking for the valide dimer")
 
 
 predicted_structures_dimer_cmap_dir = eva_util.dir_maker(output_dir + "struct_dimer_cmaps/")
@@ -281,7 +276,7 @@ dimer_strcutures_dir = eva_util.dir_maker(output_dir + "dimer_structures_pdb/")
 for values in valid_dimer_combos:
     eva_util.dir_maker(dimer_strcutures_dir + str("sequence_") + values + "/")
     eva_util.dir_maker(predicted_structures_dimer_cmap_dir + str("sequence_") + values + "/")
-
+print("Generating the cmpas of the predicted structures")
 for pdb in pdb_profile_dict:
     temp_pdb_profile = pdb_profile_dict.get(pdb)
     dimer_for_cmaps = eva_util.dimer_for_cmaps(valid_dimer_combos, temp_pdb_profile)
@@ -307,7 +302,7 @@ for pdb in pdb_profile_dict:
                 copy.deepcopy(monomer_b), "B")
             eva_util.pdb_from_array(_pdb=temp_dimer_array, _filename=dimer_pdb_file_name)
 
-#             ####THEN CONCAT DIME
+print("Concluded generating the cmpas of the predicted structures")
 
 
 # ##introduce that 20%
@@ -320,6 +315,8 @@ for pdb in pdb_profile_dict:
 # #### FOR NOW PRECOMPUTED
 # ############################ TBD ##########################
 #
+
+print("generating the cmpas using the predictors")
 
 
 extra_cmaps = eva_util.dir_maker(predicted_cmap_dir + "/extras/")
@@ -343,7 +340,7 @@ for _pred_cmap_candidate in valid_dimer_combos:
     if not os.path.exists(expected_cmaps_name):
         print("expected_cmaps " + str(expected_cmaps_name) + " not found \n")
         print("predicting the interactions \n")
-        eva_utils.glinter_runner(first_chain, second_chain, extra_cmaps, _is_homodimer,GLINTER_DIR)
+        eva_utils.glinter_runner(first_chain, second_chain, extra_cmaps, _is_homodimer, GLINTER_DIR)
     else:
         print("expected_cmaps " + str(expected_cmaps_name) + " found \n")
 #
@@ -352,6 +349,9 @@ for _pred_cmap_candidate in valid_dimer_combos:
 # ####################ALREADY DONE CURRENTLY USING PRE_COMPUTED
 #####target  wise
 
+print("Concluded generating the cmpas using the predictors")
+
+print("Started Dimer scoring part")
 for pdb in pdb_profile_dict:
     print(pdb)
     temp_pdb_profile = pdb_profile_dict.get(pdb)
@@ -361,8 +361,6 @@ for pdb in pdb_profile_dict:
     for values in valid_dimer_combos:
         print(values)
 
-        # all_specific_dimer =glob.glob(dimer_strcutures_dir + "sequence_" + str(values) + "/*" + ".pdb",
-        #           recursive=True)
         all_specific_dimer = eva_util.specific_filename_reader(
             _input_dir=dimer_strcutures_dir + "sequence_" + str(values), _extension="pdb")
         all_specific_target_dimer = eva_util.specific_filename_reader(
@@ -380,7 +378,7 @@ for pdb in pdb_profile_dict:
                 print(chain_second)
                 if chain_first != chain_second:
                     temp_dimer_chain_wise.append(
-                        eva_util.get_dock_q_score(_true=chain_first, _current=chain_second),DOCK_Q_PATH)
+                        eva_util.get_dock_q_score(_true=chain_first, _current=chain_second), DOCK_Q_PATH)
             temp_same_dimer_wise.append(np.average(temp_dimer_chain_wise))
         if len(temp_same_dimer_wise) != 0:
             a_dimer_score_dict[values] = np.max(temp_same_dimer_wise)
@@ -389,16 +387,9 @@ for pdb in pdb_profile_dict:
     # else:
     #     a_dimer_score_dict[values] = 0.0
     pdb_profile_dict.get(pdb).ds_scores = a_dimer_score_dict
-print("here")
-# #load glinter cmap
-# end_time_start = time.perf_counter()
-# print("DS SCORING PART "+str(end_time_start-start)+"\n")
-# print("RECALL CALULCATOR")
-# start = time.perf_counter()
-# # print("DS SCORING PART "+str(end_time_start-start)+"\n")
+print("Completed Dimer scoring part")
 
-# #
-# # #get icps score
+print("Started icps and recall scoring part")
 for pdb in pdb_profile_dict:
     print(pdb)
     temp_pdb_profile = pdb_profile_dict.get(pdb)
@@ -454,7 +445,7 @@ for pdb in pdb_profile_dict:
     pdb_profile_dict.get(pdb).icps_scores = temp_icps_target
     pdb_profile_dict.get(pdb).recall = temp_recall_target
 
-print("HERE")
+print("Completed icps and recall scoring part")
 monomer_score_dict = {}
 
 for monomers in fasta_stoic_dict:
@@ -479,9 +470,9 @@ for pdb_values in pdb_profile_dict:
 
     pdb_profile_dict.get(pdb_values).ms_scores = temp_mono_score_dict
 
-print("here")
-#
-eva_util.print_final_data_new(_file_name=output_dir+"/"+str(os.path.basename(fasta_dir))+".csv", _file_data=pdb_profile_dict,
+print("Generating Final scoring part")
+eva_util.print_final_data_new(_file_name=output_dir + "/" + str(os.path.basename(fasta_dir)) + ".csv",
+                              _file_data=pdb_profile_dict,
                               _chain_data=fasta_stoic_dict, _dimer_data=valid_dimer_combos)
 #
 # print("GRAND TOTAL TIME "+str(time.perf_counter()-total_time)+"\n")
