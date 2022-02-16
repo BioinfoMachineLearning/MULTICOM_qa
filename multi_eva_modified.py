@@ -9,6 +9,7 @@ import numpy as np
 import time
 import config as config_path
 import eva_utils
+from eva_utils import specific_filename_reader
 
 is_monomer_scoring_done = False
 is_dimer_scoring_done = False
@@ -17,16 +18,24 @@ TM_SCORE_PATH = config_path.config.TM_SCORE_PATH
 Q_SCORE = config_path.config.Q_SCORE
 total_time = time.perf_counter()
 pdb_profile_dict = {}
+
 import eva_utils as eva_util
 
-monomer_sequences_dir = "/home/bdmlab/multimer_test/input/H1036.fasta"
+# monomer_sequences_dir = "/home/bdmlab/multimer_test/input/H1036.fasta"
+# # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
+# input_dir = "/home/bdmlab/multimer_test/input/H1036/"
+# stoichiometry = "A3B3C3"
+# # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
+# output_dir = "/home/bdmlab/multimer_test/output/"
+
+
+monomer_sequences_dir = "/home/bdmlab/T1016.fasta"
 # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
-input_dir = "/home/bdmlab/multimer_test/input/H1036/"
-stoichiometry = "A3B3C3"
+input_dir = "/home/bdmlab/T1016/T1016_pred_lite/"
+stoichiometry = "A2"
 # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
-output_dir = "/home/bdmlab/multimer_test/output/"
-
-
+output_dir = "/home/bdmlab/T1016_test_2/"
+predicted_structures = "/home/bdmlab/af2/"
 
 #
 #
@@ -37,7 +46,6 @@ output_dir = "/home/bdmlab/multimer_test/output/"
 # stoichiometry = "A1B1"
 # # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
 # output_dir = "/home/bdmlab/hetero_test/H1045_new/output/"
-
 
 
 # monomer_sequences_dir = sys.argv[1]
@@ -52,9 +60,23 @@ TARGET_NAME = os.path.basename(monomer_sequences_dir).replace(".fasta", "")
 fasta_dir = eva_utils.dir_maker(output_dir + "fasta/")
 score_dir = eva_utils.dir_maker(output_dir + "score/")
 monomer_score_dir = eva_utils.dir_maker(score_dir + "monomer/")
-
+predicted_monomer_dir = eva_utils.dir_maker(output_dir + "predicted_monomer/")
+pred_structures = eva_util.specific_filename_reader(predicted_structures, "")
+predicted_cmap_dir = eva_util.dir_maker(output_dir + "predicted_cmaps/")
 fasta_stoic_dict = eva_util.multi_fasta_reader(_seq_file=monomer_sequences_dir)
 eva_util.save_multi_fasta(fasta_dir, fasta_stoic_dict)
+
+for values in pred_structures:
+    # get_fasta_from_pdb_array
+    temp_fasta_values = eva_utils.get_fasta_from_pdb_array(
+        eva_utils.contents_to_info(eva_utils.read_pdb(predicted_structures + values + ".pdb")))
+    temp_seq = eva_util.sequence_finder(_seq_fasta_dict=fasta_stoic_dict, _fasta_string=temp_fasta_values)
+    cmd = "cp "+predicted_structures+str(values)+".pdb "+str(predicted_monomer_dir)+"/sequence_"+str(temp_seq)+"_A.pdb"
+    os.system(cmd)
+    cmd = "cp " + predicted_structures + str(values) + ".pdb " + str(predicted_monomer_dir) + "/sequence_" + str(
+        temp_seq) + "_B.pdb"
+    os.system(cmd)
+    print()
 
 stoi_details = eva_util.get_stoichiometry_details(stoichiometry)
 predicted_pdb_files = eva_util.specific_filename_reader(input_dir, "")
@@ -97,7 +119,7 @@ for pdb_1 in predicted_pdb_files:
     temp_MM_score = []
     for pdb_2 in predicted_pdb_files:
         if pdb_1 != pdb_2:
-            mm_valie = eva_util.get_MM_score(input_dir+"/"+pdb_1,input_dir+"/"+pdb_2)
+            mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2)
             temp_MM_score.append(mm_valie)
     pdb_profile_dict.get(pdb_1).multimer_scoring = np.average(temp_MM_score)
 
@@ -128,7 +150,6 @@ for true_squence in fasta_stoic_dict:
             if os.path.exists(monomer_pdb_name):
                 os.system("cp " + monomer_pdb_name + " " + current_dir_name)
 
-
 ##################### MONOMER SCORING PART #################################
 for chain_value in fasta_stoic_dict:
     temp_chain_dir = predicted_monomer_chains_dir + "sequence_" + str(chain_value) + "/"
@@ -156,6 +177,8 @@ print("qA score time " + str(end_time_start - start) + "\n")
 #
 # # ALL CHAINS CA
 # start = time.perf_counter()
+
+
 for pdb in predicted_pdb_files:
     # temp_predicted_pdb_profile = eva_util.predicted_pdb_profile()
     # temp_predicted_pdb_profile.monomers_chains = []
@@ -236,6 +259,11 @@ for _pdbs in all_dimer_combination:
         valid_dimer_combos.append(str_pdb)
 
 print("here")
+
+
+
+
+
 predicted_structures_dimer_cmap_dir = eva_util.dir_maker(output_dir + "struct_dimer_cmaps/")
 dimer_strcutures_dir = eva_util.dir_maker(output_dir + "dimer_structures_pdb/")
 # eva_util.dir_maker(dimer_strcutures_dir + str("all") + "/")
@@ -282,7 +310,32 @@ for pdb in pdb_profile_dict:
 # #### FOR NOW PRECOMPUTED
 # ############################ TBD ##########################
 #
-#
+
+
+extra_cmaps = eva_util.dir_maker(predicted_cmap_dir + "/extras/")
+for _pred_cmap_candidate in valid_dimer_combos:
+    _is_homodimer = False
+    first_chain = ""
+    second_chain = ""
+    expected_cmaps_name = predicted_cmap_dir
+    if _pred_cmap_candidate[0] == _pred_cmap_candidate[1]:
+        _is_homodimer = True
+        first_chain = predicted_monomer_dir + "/sequence_" + _pred_cmap_candidate[0] + "_A.pdb"
+        second_chain = predicted_monomer_dir + "/sequence_" + _pred_cmap_candidate[0] + "_B.pdb"
+        expected_cmaps_name = expected_cmaps_name + "/sequence_" + str(_pred_cmap_candidate[0]) + "_A:sequence" + str(
+            _pred_cmap_candidate[1]) + "_B.cmap"
+    else:
+        first_chain = predicted_monomer_dir + "/sequence_" + _pred_cmap_candidate[0] + "_A.pdb"
+        second_chain = predicted_monomer_dir + "/sequence_" + _pred_cmap_candidate[0] + "_A.pdb"
+        expected_cmaps_name = expected_cmaps_name + "/sequence_" + str(_pred_cmap_candidate[0]) + "_A:sequence" + str(
+            _pred_cmap_candidate[1]) + "_A.cmap"
+
+    if not os.path.exists(expected_cmaps_name):
+        print("expected_cmaps " + str(expected_cmaps_name) + " not found \n")
+        print("predicting the interactions \n")
+        eva_utils.glinter_runner(first_chain, second_chain, extra_cmaps, _is_homodimer)
+    else:
+        print("expected_cmaps " + str(expected_cmaps_name) + " found \n")
 #
 # ################QUESION ALPHAFOLD STRUCTURE ??
 # #then run glinter
@@ -333,7 +386,7 @@ print("here")
 # print("RECALL CALULCATOR")
 # start = time.perf_counter()
 # # print("DS SCORING PART "+str(end_time_start-start)+"\n")
-predicted_cmap_dir = eva_util.dir_maker(output_dir + "predicted_cmaps/")
+
 # #
 # # #get icps score
 for pdb in pdb_profile_dict:
@@ -347,10 +400,10 @@ for pdb in pdb_profile_dict:
         dimer_cmap_dir = predicted_structures_dimer_cmap_dir + "sequence_" + str(dimer) + "/"
         print(dimer_cmap_dir)
         if dimer[0] != dimer[1]:
-            predicted_cmap = predicted_cmap_dir + "Sequence_" + str(dimer[0]) + "_A:" + "Sequence_" + str(
+            predicted_cmap = predicted_cmap_dir + "sequence_" + str(dimer[0]) + "_A:" + "sequence_" + str(
                 dimer[1]) + "_A.cmap"
         else:
-            predicted_cmap = predicted_cmap_dir + "Sequence_" + str(dimer[0]) + "_A:" + "Sequence_" + str(
+            predicted_cmap = predicted_cmap_dir + "sequence_" + str(dimer[0]) + "_A:" + "sequence_" + str(
                 dimer[1]) + "_B.cmap"
         ## get all the cmaps
         all_cmap_same_type = eva_util.specific_filename_reader(dimer_cmap_dir, pdb)
@@ -408,7 +461,7 @@ for pdb_values in pdb_profile_dict:
         temp_ms_chainwise = []
         # a_monomer_score = monomer_score_dict.get(str(values)).get(pdb_values)
         monomer_scores_targetwise = monomer_score_dict.get(str(values))
-        for ms in  monomer_scores_targetwise:
+        for ms in monomer_scores_targetwise:
             if pdb_values in ms:
                 temp_ms_chainwise.append(monomer_scores_targetwise.get(ms))
 
@@ -418,6 +471,7 @@ for pdb_values in pdb_profile_dict:
 
 print("here")
 #
-eva_util.print_final_data_new(_file_name="/home/bdmlab/result_H1036_new.csv",_file_data=pdb_profile_dict,_chain_data =fasta_stoic_dict,_dimer_data=valid_dimer_combos)
+eva_util.print_final_data_new(_file_name="/home/bdmlab/result_T1016.csv", _file_data=pdb_profile_dict,
+                              _chain_data=fasta_stoic_dict, _dimer_data=valid_dimer_combos)
 #
 # print("GRAND TOTAL TIME "+str(time.perf_counter()-total_time)+"\n")

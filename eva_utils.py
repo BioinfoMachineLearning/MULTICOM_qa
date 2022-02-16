@@ -83,18 +83,17 @@ def closest_key(_seq_fasta_dict,_fasta_string):
     val = []
     for key in _seq_fasta_dict:
         val.append(find_lowest_gap(_seq_fasta_dict.get(key),_fasta_string))
-
     seq = min(val)
     index_closest = val.index(seq)
-
     return index_closest
+
 def sequence_finder(_seq_fasta_dict,_fasta_string):
     for key in _seq_fasta_dict:
         temp_fasta = _seq_fasta_dict.get(key)
         if temp_fasta == _fasta_string:
             return  key
     seq_ =  closest_key(_seq_fasta_dict,_fasta_string)
-    print(" closest_key ")
+    # print(" closest_key ")
     return seq_
 
 class predicted_pdb_profile:
@@ -691,7 +690,11 @@ def get_header_string (_stoic,_dimer):
 
     for _dimers in _dimer:
         head_string.append( "R_"+str(_dimers))
-
+    head_string.append("average_MS")
+    head_string.append("average_DS")
+    head_string.append("average_ICPS")
+    head_string.append("average_R")
+    head_string.append("average_MMS")
     head_string.append("Final_score")
     return head_string
 
@@ -718,6 +721,7 @@ def print_final_data_new(_file_name, _file_data, _chain_data,_dimer_data):
             else:
                 temp_ms_score.append(0)
                 total_values.append(0)
+
         # ms = replace_nan(temp_ms_score)
 
         for dimers in dimer_interaction_discover:
@@ -727,6 +731,7 @@ def print_final_data_new(_file_name, _file_data, _chain_data,_dimer_data):
             else:
                 total_values.append(0)
                 temp_ds_score.append(0)
+
         # ds = replace_nan(temp_ds_score)
 
         for dimers in dimer_interaction_discover:
@@ -745,7 +750,12 @@ def print_final_data_new(_file_name, _file_data, _chain_data,_dimer_data):
                 total_values.append(0)
                 temp_recall.append(0)
             # temp_recall.append(temp.recall.get(dimers))
-        final_score = np.average(total_values)
+        total_values.append(np.average(temp_ms_score))
+        total_values.append(np.average(temp_ds_score))
+        total_values.append(np.average(temp_icps))
+        total_values.append(np.average(temp_recall))
+        total_values.append(temp.multimer_scoring)
+        final_score = np.average([np.average(temp_ms_score),np.average(temp_ds_score),np.average(temp_icps),np.average(temp_recall),temp.multimer_scoring])
         total_values.append(final_score)
 
 
@@ -757,4 +767,25 @@ def print_final_data_new(_file_name, _file_data, _chain_data,_dimer_data):
 
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/test/.cmap"))
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/true/.cmap"))
-get_MM_score()
+GLINTER_DIR ="/home/rsr3gt/anaconda3/envs/multi_eva/"
+def glinter_runner(_first_pdb,_second_pdb,_out_dir,_is_homodimer):
+    envs = GLINTER_DIR+"/scripts/set_env.sh"
+    os.system("source "+str(envs))
+    name_1_list = os.path.basename(_second_pdb).split(".")[0]
+    name_2_list = os.path.basename(_second_pdb).split(".")[0]
+
+    if _is_homodimer == True:
+        cmd = GLINTER_DIR+"/scripts/build_homo.sh " +str(_first_pdb)+" "+str(_second_pdb)+ " "+str(_out_dir)+" "+str(name_1_list)
+        print(os.system(cmd))
+    else:
+        cmd = GLINTER_DIR + "/scripts/build_hetero.sh " + str(_first_pdb) + " " + str(_second_pdb) + " " + str(_out_dir)
+        print(os.system(cmd))
+    name = str(name_1_list)+":"+str(name_2_list)
+    cmap_file = _out_dir+name+"/score_mat.pkl"
+
+    if os.path.exists(cmap_file):
+        dest_file  = _out_dir.replace("extras/","")+name+".cmap"
+        cmd=  "cp "+cmap_file+" "+dest_file
+        os.system(cmd)
+
+

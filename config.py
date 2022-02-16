@@ -14,4 +14,9 @@ class config:
         Q_SCORE = "/home/bdmlab/pairwiseQA/q_score"
         TM_SCORE_PATH = "/home/bdmlab/Documents/tools/TMscore"
         MM_ALIGN_PATH = "/home/bdmlab/Documents/tools/MMalign"
+    elif "Lily" == DEVICE:
+        PARIWISE_QA_SCRIPT = "/home/bdmlab/pairwise_model_eva.pl"
+        Q_SCORE = "/home/bdmlab/pairwiseQA/q_score"
+        TM_SCORE_PATH = "/home/bdmlab/Documents/tools/TMscore"
+        MM_ALIGN_PATH = "/home/bdmlab/Documents/tools/MMalign"
 
