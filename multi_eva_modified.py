@@ -47,7 +47,7 @@ import eva_utils as eva_util
 monomer_sequences_dir = sys.argv[1]
 input_dir = sys.argv[2]
 stoichiometry = sys.argv[3]
-predicted_structures = sys.argv[4]
+predicted_structures_AF2 = sys.argv[4]
 output_dir = sys.argv[5]
 
 if os.path.isfile(monomer_sequences_dir):
@@ -55,11 +55,9 @@ if os.path.isfile(monomer_sequences_dir):
 if os.path.exists(input_dir):
     print(str(input_dir) + " Found")
 print("stoichiometry " + str(stoichiometry))
-if os.path.exists(predicted_structures):
-    print(str(predicted_structures) + " Found")
-if os.path.exists(predicted_structures):
-    print(str(predicted_structures) + " Found")
-print("output file : " + str(output_dir))
+if os.path.exists(predicted_structures_AF2):
+    print(str(predicted_structures_AF2) + " Found")
+
 
 #
 #
@@ -77,8 +75,8 @@ TARGET_NAME = os.path.basename(monomer_sequences_dir).replace(".fasta", "")
 fasta_dir = eva_utils.dir_maker(output_dir + "fasta/")
 score_dir = eva_utils.dir_maker(output_dir + "score/")
 monomer_score_dir = eva_utils.dir_maker(score_dir + "monomer/")
-predicted_monomer_dir = eva_utils.dir_maker(output_dir + "predicted_monomer/")
-pred_structures = eva_util.specific_filename_reader(predicted_structures, "")
+predicted_monomer_dir_AF2 = eva_utils.dir_maker(output_dir + "predicted_monomer/")
+pred_structures = eva_util.specific_filename_reader(predicted_structures_AF2, "")
 predicted_cmap_dir = eva_util.dir_maker(output_dir + "predicted_cmaps/")
 fasta_stoic_dict = eva_util.multi_fasta_reader(_seq_file=monomer_sequences_dir)
 eva_util.save_multi_fasta(fasta_dir, fasta_stoic_dict)
@@ -86,13 +84,13 @@ eva_util.save_multi_fasta(fasta_dir, fasta_stoic_dict)
 for values in pred_structures:
     # get_fasta_from_pdb_array
     temp_fasta_values = eva_utils.get_fasta_from_pdb_array(
-        eva_utils.contents_to_info(eva_utils.read_pdb(predicted_structures + values + ".pdb")))
+        eva_utils.contents_to_info(eva_utils.read_pdb(predicted_structures_AF2 + values + ".pdb")))
     temp_seq = eva_util.sequence_finder(_seq_fasta_dict=fasta_stoic_dict, _fasta_string=temp_fasta_values)
-    cmd = "cp " + predicted_structures + str(values) + ".pdb " + str(predicted_monomer_dir) + "/sequence_" + str(
+    cmd = "cp " + predicted_structures_AF2 + str(values) + ".pdb " + str(predicted_monomer_dir_AF2) + "/sequence_" + str(
         temp_seq) + "_A.pdb"
     os.system(cmd)
     print(cmd)
-    cmd = "cp " + predicted_structures + str(values) + ".pdb " + str(predicted_monomer_dir) + "/sequence_" + str(
+    cmd = "cp " + predicted_structures_AF2 + str(values) + ".pdb " + str(predicted_monomer_dir_AF2) + "/sequence_" + str(
         temp_seq) + "_B.pdb"
     os.system(cmd)
     print(cmd)
@@ -327,14 +325,14 @@ for _pred_cmap_candidate in valid_dimer_combos:
     expected_cmaps_name = predicted_cmap_dir
     if _pred_cmap_candidate[0] == _pred_cmap_candidate[1]:
         _is_homodimer = True
-        first_chain = predicted_monomer_dir + "/sequence_" + _pred_cmap_candidate[0] + "_A.pdb"
-        second_chain = predicted_monomer_dir + "/sequence_" + _pred_cmap_candidate[0] + "_B.pdb"
-        expected_cmaps_name = expected_cmaps_name + "/sequence_" + str(_pred_cmap_candidate[0]) + "_A:sequence" + str(
+        first_chain = predicted_monomer_dir_AF2 + "/sequence_" + _pred_cmap_candidate[0] + "_A.pdb"
+        second_chain = predicted_monomer_dir_AF2 + "/sequence_" + _pred_cmap_candidate[0] + "_B.pdb"
+        expected_cmaps_name = expected_cmaps_name + "/sequence_" + str(_pred_cmap_candidate[0]) + "_A:sequence_" + str(
             _pred_cmap_candidate[1]) + "_B.cmap"
     else:
-        first_chain = predicted_monomer_dir + "/sequence_" + _pred_cmap_candidate[0] + "_A.pdb"
-        second_chain = predicted_monomer_dir + "/sequence_" + _pred_cmap_candidate[0] + "_A.pdb"
-        expected_cmaps_name = expected_cmaps_name + "/sequence_" + str(_pred_cmap_candidate[0]) + "_A:sequence" + str(
+        first_chain = predicted_monomer_dir_AF2 + "/sequence_" + _pred_cmap_candidate[0] + "_A.pdb"
+        second_chain = predicted_monomer_dir_AF2 + "/sequence_" + _pred_cmap_candidate[0] + "_A.pdb"
+        expected_cmaps_name = expected_cmaps_name + "/sequence_" + str(_pred_cmap_candidate[0]) + "_A:sequence_" + str(
             _pred_cmap_candidate[1]) + "_A.cmap"
 
     if not os.path.exists(expected_cmaps_name):
