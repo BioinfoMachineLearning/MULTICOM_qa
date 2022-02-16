@@ -552,7 +552,8 @@ def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_p
 
 def get_icps_score(_struct_cmap, _pred_cmap,_transpose):
     first_cmap_copy = np.loadtxt(_struct_cmap)
-    second_cmap_copy = np.loadtxt(_pred_cmap)
+    # second_cmap_copy = np.loadtxt(_pred_cmap)
+    second_cmap_copy = np.load(_pred_cmap, allow_pickle=True)
     if _transpose:
         first_cmap_copy = np.transpose(first_cmap_copy)
 
@@ -579,7 +580,8 @@ def show_cmap_image(data, _name):
 
 def get_recall(_struct_cmap, _pred_cmap,_transpose):
     struct_cmap = np.loadtxt(_struct_cmap)
-    pred_cmap = np.loadtxt(_pred_cmap)
+    # pred_cmap = np.loadtxt(_pred_cmap)
+    pred_cmap = np.load(_pred_cmap, allow_pickle=True)
     len_a, len_b = pred_cmap.shape
     if _transpose:
         struct_cmap = np.transpose(struct_cmap)
