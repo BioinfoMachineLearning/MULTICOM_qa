@@ -469,7 +469,7 @@ for pdb_values in pdb_profile_dict:
     pdb_profile_dict.get(pdb_values).ms_scores = temp_mono_score_dict
 
 print("Generating Final scoring part")
-eva_util.print_final_data_new(_file_name=output_dir + "/" + str(os.path.basename(fasta_dir)) + ".csv",
+eva_util.print_final_data_new(_file_name=output_dir + "/" + str(os.path.basename(monomer_sequences_dir).split(".")[0]) + ".csv",
                               _file_data=pdb_profile_dict,
                               _chain_data=fasta_stoic_dict, _dimer_data=valid_dimer_combos)
 #
