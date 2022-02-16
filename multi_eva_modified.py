@@ -481,7 +481,7 @@ for pdb_values in pdb_profile_dict:
 
 print("here")
 #
-eva_util.print_final_data_new(_file_name="/home/bdmlab/result_T1016.csv", _file_data=pdb_profile_dict,
+eva_util.print_final_data_new(_file_name=output_dir+"/"+str(os.path.basename(fasta_dir))+".csv", _file_data=pdb_profile_dict,
                               _chain_data=fasta_stoic_dict, _dimer_data=valid_dimer_combos)
 #
 # print("GRAND TOTAL TIME "+str(time.perf_counter()-total_time)+"\n")
