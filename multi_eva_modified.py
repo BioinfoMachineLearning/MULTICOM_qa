@@ -375,7 +375,7 @@ for pdb in pdb_profile_dict:
                 chain_second = dimer_strcutures_dir + "sequence_" + str(values) + "/" + predicted_dimer + ".pdb"
                 # print(chain_second)
                 if chain_first != chain_second:
-                    print(pdb)
+                    print(predicted_dimer)
                     try:
                         temp_dimer_chain_wise.append(
                             eva_util.get_dock_q_score(_true=chain_first, _current=chain_second, _DOCK_Q_PATH=DOCK_Q_PATH))
