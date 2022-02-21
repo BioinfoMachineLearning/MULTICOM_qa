@@ -351,7 +351,7 @@ print("Concluded generating the cmpas using the predictors")
 
 print("Started Dimer scoring part")
 for pdb in pdb_profile_dict:
-    print(pdb)
+#    print(pdb)
     temp_pdb_profile = pdb_profile_dict.get(pdb)
     a_dimer_score_dict = {}
     #####possible dimer wise

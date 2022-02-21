@@ -772,12 +772,13 @@ def print_final_data_new(_file_name, _file_data, _chain_data,_dimer_data):
 def glinter_runner(_first_pdb,_second_pdb,_out_dir,_is_homodimer,expected_cmaps_name,_glinter):
     GLINTER_DIR = _glinter
     envs = GLINTER_DIR+"/scripts/set_env.sh"
+    print(envs)
     os.system("source "+str(envs))
-    name_1_list = os.path.basename(_second_pdb).split(".")[0]
+    name_1_list = os.path.basename(_first_pdb).split(".")[0]
     name_2_list = os.path.basename(_second_pdb).split(".")[0]
-
+    os.system("cd "+GLINTER_DIR)
     if _is_homodimer == True:
-        cmd = GLINTER_DIR+"/scripts/build_homo.sh " +str(_first_pdb)+" "+str(_second_pdb)+ " "+str(_out_dir)+" "+str(name_1_list)
+        cmd = GLINTER_DIR+"/scripts/build_homo.sh " +str(_first_pdb)+" "+str(_second_pdb)+ " "+str(_out_dir)+" "+str(name_2_list)
         print(os.system(cmd))
     else:
         cmd = GLINTER_DIR + "/scripts/build_hetero.sh " + str(_first_pdb) + " " + str(_second_pdb) + " " + str(_out_dir)
@@ -785,12 +786,17 @@ def glinter_runner(_first_pdb,_second_pdb,_out_dir,_is_homodimer,expected_cmaps_
     name = str(name_1_list)+":"+str(name_2_list)
     cmap_file = _out_dir+name+"/score_mat.pkl"
 
+#    content =  np.load(cmap_file, allow_pickle=True)
+    print(cmd)
+    print(cmap_file)
     if os.path.exists(cmap_file):
+        content =  np.load(cmap_file, allow_pickle=True)
+        _out_dir= _out_dir.replace("//","/")
         dest_file  = _out_dir.replace("extras/","")+name+".cmap"
-
-        np.savetxt(expected_cmaps_name,dest_file)
+        print(dest_file)
+        np.savetxt(expected_cmaps_name,content)
         # cmd=  "cp "+cmap_file+" "+dest_file
-        os.system(cmd)
+#        os.system(cmd)
 
     return
 
