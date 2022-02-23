@@ -569,7 +569,8 @@ def get_dock_q_score(_inp):
 
 def get_dock_q_score_parallel_submit(_array):
     all_value = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    worker = 10*2 +4
+    with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
         result_futures = list(map(lambda x: executor.submit(get_dock_q_score, x), _array))
         for future in concurrent.futures.as_completed(result_futures):
             try:
