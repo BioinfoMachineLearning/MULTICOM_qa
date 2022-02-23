@@ -306,19 +306,54 @@ def fix_serial(_array, _no=1):
 
 
 # MM_ALIGN_PATH = "/home/bdmlab/Documents/tools/MMalign"
-def get_MM_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
-                 _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb",
-                 _MM_ALIGN="/home/bdmlab/Documents/tools/MMalign"):
-    MM_ALIGN_PATH = _MM_ALIGN
-    contents = subprocess.check_output([MM_ALIGN_PATH, _true, _current])
-    tm_list = []
+# def get_MM_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
+#                  _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb",
+#                  _MM_ALIGN="/home/bdmlab/Documents/tools/MMalign"):
+#     MM_ALIGN_PATH = _MM_ALIGN
+#     contents = subprocess.check_output([MM_ALIGN_PATH, _true, _current])
+#     tm_list = []
+#
+#     for item in contents.decode("utf-8").split("\n"):
+#
+#         if "TM-score=" in item:
+#             tm_list.append(float(item.strip().split(" ")[1].strip()))
+#
+#     return np.min(tm_list)
 
-    for item in contents.decode("utf-8").split("\n"):
 
-        if "TM-score=" in item:
-            tm_list.append(float(item.strip().split(" ")[1].strip()))
+def get_MM_score(_arr):
+    MM_ALIGN_PATH = _arr[2]
+    # print(MM_ALIGN_PATH, _arr[0], _arr[1])
+    contents = subprocess.check_output([MM_ALIGN_PATH, _arr[0], _arr[1]])
+    try:
+        tm_list = []
 
-    return np.min(tm_list)
+        for item in contents.decode("utf-8").split("\n"):
+
+            if "TM-score=" in item:
+                tm_list.append(float(item.strip().split(" ")[1].strip()))
+
+        return np.min(tm_list)
+    except:
+        return  0.0
+
+
+
+def get_MM_score_parallel_submit(_array):
+    all_value = []
+    worker = 10*2 +4
+    with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
+        result_futures = list(map(lambda x: executor.submit(get_MM_score, x), _array))
+        for future in concurrent.futures.as_completed(result_futures):
+            try:
+                # print('resutl is', future.result())
+                all_value.append(future.result())
+                # print(type(future.result()))
+            except Exception as e:
+                print('e is', e, type(e))
+                all_value.append(0)
+
+    return np.average(all_value)
 
 
 def correct_format(_pdb_row):

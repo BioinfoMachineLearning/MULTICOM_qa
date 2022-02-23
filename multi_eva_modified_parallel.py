@@ -36,7 +36,7 @@ import eva_utils as eva_util
 #python multi_eva_modified.py ../data/fasta_casp14/casp_capri_fasta/T1032.fasta /home/rsr3gt/programs/Multi_Eva/Multimet_evatest_samples/predictions/T1032_lite/ A2 /home/rsr3gt/programs/Multi_Eva/data/pdbs_casp_alphafold/T1032/ /home/rsr3gt/programs/Multi_Eva/output/Qs_T1032/
 
 
-#
+
 # monomer_sequences_dir = "/home/bdmlab/T1032.fasta"
 # input_dir ="/home/bdmlab/new_tests/pred/"
 # stoichiometry = "A2"
@@ -137,13 +137,16 @@ print(" Ended seperating of Chains")
 print("Multimer scoring started")
 for pdb_1 in predicted_pdb_files:
     # print(pdb_1)
-    temp_MM_score = []
+    temp_MM_score_command = []
+    mm_valie = 0
     for pdb_2 in predicted_pdb_files:
         if pdb_1 != pdb_2:
-            mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
-            temp_MM_score.append(mm_valie)
+            # mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
+            temp_MM_score_command.append([input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN])
+    mm_valie =  eva_utils.get_MM_score_parallel_submit(temp_MM_score_command)
+    print(mm_valie)
     # print(str(np.average(temp_MM_score)))
-    pdb_profile_dict.get(pdb_1).multimer_scoring = np.average(temp_MM_score)
+    pdb_profile_dict.get(pdb_1).multimer_scoring =mm_valie
 print("Multimer scoring Done")
 print("Mapping chains to clusters")
 #######chain cluster mapper
