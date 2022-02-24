@@ -60,7 +60,14 @@ def space_returner(_input):
         i = i + 1
     return space
 
-
+def added_warning_logs(_file, _msg):
+    # Open a file with access mode 'a'
+    file_object = open(_file, 'a')
+    # Append 'hello' at the end of file
+    file_object.write(_msg)
+    # Close the file
+    file_object.close()
+    return
 def find_lowest_gap(_target, _hit):
     aln_val = pairwise2.align.globalms(_target, _hit, 5, -4, -1, -0.1)
     chain_target = list(aln_val[0][0])

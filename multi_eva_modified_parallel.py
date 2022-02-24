@@ -80,7 +80,7 @@ pred_structures = eva_util.specific_filename_reader(predicted_structures_AF2, ""
 predicted_cmap_dir = eva_util.dir_maker(output_dir + "predicted_cmaps/")
 fasta_stoic_dict = eva_util.multi_fasta_reader(_seq_file=monomer_sequences_dir)
 eva_util.save_multi_fasta(fasta_dir, fasta_stoic_dict)
-
+warning_file = output_dir+"warning.log"
 for values in pred_structures:
     # get_fasta_from_pdb_array
     temp_fasta_values = eva_utils.get_fasta_from_pdb_array(
@@ -176,12 +176,13 @@ for true_squence in fasta_stoic_dict:
     for _pdb in pdb_profile_dict:
         print(_pdb)
         temp_pdb = pdb_profile_dict.get(_pdb).cluster_chain.get(true_squence)
-    
-        for chains in temp_pdb:
-            monomer_pdb_name = predicted_monomer_dir + str(_pdb) + "/" + str(_pdb) + "_chain_" + str(chains) + ".pdb"
-            if os.path.exists(monomer_pdb_name):
-                os.system("cp " + monomer_pdb_name + " " + current_dir_name)
-
+        if temp_pdb != None:
+            for chains in temp_pdb:
+                monomer_pdb_name = predicted_monomer_dir + str(_pdb) + "/" + str(_pdb) + "_chain_" + str(chains) + ".pdb"
+                if os.path.exists(monomer_pdb_name):
+                    os.system("cp " + monomer_pdb_name + " " + current_dir_name)
+        else:
+            eva_util.added_warning_logs(_file=warning_file,_msg="Monomer division "+ str(_pdb)+" sequence "+str(true_squence)+"\n")
 ##################### MONOMER SCORING PART #################################
 for chain_value in fasta_stoic_dict:
     temp_chain_dir = predicted_monomer_chains_dir + "sequence_" + str(chain_value) + "/"
