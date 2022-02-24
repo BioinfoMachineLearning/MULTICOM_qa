@@ -1,10 +1,11 @@
+import numpy as np
 import copy
 import csv
 import math
 import os
 import re
 import subprocess
-import numpy as np
+#import numpy as np
 from Bio import pairwise2
 from PIL import Image as im
 import concurrent.futures
@@ -844,17 +845,20 @@ def glinter_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cm
     GLINTER_DIR = _glinter
     envs = GLINTER_DIR + "/scripts/set_env.sh"
     print(envs)
-    os.system("export MKL_SERVICE_FORCE_INTEL=1")
+#    os.system("export MKL_SERVICE_FORCE_INTEL=1")
+ #   os.system("conda activate multi_eva")
     os.system("source " + str(envs))
+#    os.system("export MKL_SERVICE_FORCE_INTEL=1")
+
     name_1_list = os.path.basename(_first_pdb).split(".")[0]
     name_2_list = os.path.basename(_second_pdb).split(".")[0]
     os.system("cd " + GLINTER_DIR)
     if _is_homodimer == True:
         cmd = GLINTER_DIR + "/scripts/build_homo.sh " + str(_first_pdb) + " " + str(_second_pdb) + " " + str(
             _out_dir) + " " + str(name_2_list)
-        print(os.system(cmd))
+        print(os.system( cmd))
     else:
-        cmd = GLINTER_DIR + "/scripts/build_hetero.sh " + str(_first_pdb) + " " + str(_second_pdb) + " " + str(_out_dir)
+        cmd = GLINTER_DIR + "/scripts/build_hetero.sh " + str(_first_pdb.replace("//","/")) + " " + str(_second_pdb.replace("//","/")) + " " + str(_out_dir.replace("//","/"))
         print(os.system(cmd))
     name = str(name_1_list) + ":" + str(name_2_list)
     cmap_file = _out_dir + name + "/score_mat.pkl"

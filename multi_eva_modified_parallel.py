@@ -172,8 +172,11 @@ print("Monomer scoring started")
 for true_squence in fasta_stoic_dict:
     current_dir_name = predicted_monomer_chains_dir + "/sequence_" + str(true_squence) + "/"
     eva_util.dir_maker(current_dir_name)
+    print(true_squence)
     for _pdb in pdb_profile_dict:
+        print(_pdb)
         temp_pdb = pdb_profile_dict.get(_pdb).cluster_chain.get(true_squence)
+    
         for chains in temp_pdb:
             monomer_pdb_name = predicted_monomer_dir + str(_pdb) + "/" + str(_pdb) + "_chain_" + str(chains) + ".pdb"
             if os.path.exists(monomer_pdb_name):
