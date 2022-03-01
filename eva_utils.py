@@ -853,10 +853,9 @@ def glinter_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cm
     envs = GLINTER_DIR + "scripts/set_env.sh"
     print(envs)
     os.system("export MKL_SERVICE_FORCE_INTEL=1")
- #   os.system("conda activate multi_eva")
     os.system("source " + str(envs))
+#    os.system("cd "+GLINTER_DIR)
 #    os.system("export MKL_SERVICE_FORCE_INTEL=1")
-    time.sleep(60)
     name_1_list = os.path.basename(_first_pdb).split(".")[0]
     name_2_list = os.path.basename(_second_pdb).split(".")[0]
 #    os.system("cd " + GLINTER_DIR)
