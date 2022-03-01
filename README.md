@@ -7,7 +7,7 @@ Evaluate the quality of protein multimer structure models
 
 ```e.g python multi_eva_modified_parallel.py /home/rsr3gt/programs/Multi_Eva/data/fasta_casp14/casp_capri_fasta/H1060.fasta /home/rsr3gt/programs/Multi_Eva/data/predictions_cleaned/H1060/ A6B3C12D6 /home/rsr3gt/programs/Multi_Eva/data/pdbs_casp_alphafold/H1060/ /home/rsr3gt/programs/Multi_Eva/output/example_H1060_beta/```
 
-
+Final output would be a csv file with the final score of all the structures in the output directory, e.g "H1060.csv"
 
 # Requirements:
 1. Glinter (https://github.com/zw2x/glinter)
