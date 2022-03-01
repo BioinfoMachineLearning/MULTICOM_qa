@@ -229,21 +229,25 @@ for pdb in pdb_profile_dict:
     temp_all_dimer_combination = copy.deepcopy(all_dimer_combination)
     for dimers in all_dimer_combination:
         if dimers[0] == dimers[1]:
-            len_a_dimers = len(temp.cluster_chain.get(str(dimers[0])))
-            if len_a_dimers == 1:
-                temp_all_dimer_combination.remove(dimers)
+            if temp.cluster_chain.get(str(dimers[0])) != None:
+                len_a_dimers = len(temp.cluster_chain.get(str(dimers[0])))
+            
+                if len_a_dimers == 1:
+                    temp_all_dimer_combination.remove(dimers)
 
     for dimers in temp_all_dimer_combination:
         first_chain_list = temp.cluster_chain.get(str(dimers[0]))
         second_chain_list = temp.cluster_chain.get(str(dimers[1]))
-        for first_chain in first_chain_list:
-            for second_chain in second_chain_list:
-                if first_chain != second_chain:
-                    first_chain_pdb = temp.chain_skeleton_CA[first_chain]
-                    second_chain_pdb = temp.chain_skeleton_CA[second_chain]
-                    if eva_util.if_contact(first_chain_pdb, second_chain_pdb):
-                        temp_dimer.append(str(first_chain) + str(second_chain))
-                        all_pdb_dimers_contact.append(str(pdb) + "_" + str(dimers[0]) + str(dimers[1]))
+
+        if first_chain_list != None and second_chain_list !=None:
+            for first_chain in first_chain_list:
+                for second_chain in second_chain_list:
+                    if first_chain != second_chain:
+                        first_chain_pdb = temp.chain_skeleton_CA[first_chain]
+                        second_chain_pdb = temp.chain_skeleton_CA[second_chain]
+                        if eva_util.if_contact(first_chain_pdb, second_chain_pdb):
+                            temp_dimer.append(str(first_chain) + str(second_chain))
+                            all_pdb_dimers_contact.append(str(pdb) + "_" + str(dimers[0]) + str(dimers[1]))
     rr_removed_temp_dimer = []
     for values in temp_dimer:
         temp_values = []
@@ -471,11 +475,16 @@ for pdb_values in pdb_profile_dict:
         temp_ms_chainwise = []
         # a_monomer_score = monomer_score_dict.get(str(values)).get(pdb_values)
         monomer_scores_targetwise = monomer_score_dict.get(str(values))
-        for ms in monomer_scores_targetwise:
-            if pdb_values in ms:
-                temp_ms_chainwise.append(monomer_scores_targetwise.get(ms))
-
-        temp_mono_score_dict[values] = np.max(temp_ms_chainwise)
+        if monomer_scores_targetwise != None:
+            for ms in monomer_scores_targetwise:
+                if pdb_values in ms:
+                    temp_ms_chainwise.append(monomer_scores_targetwise.get(ms))
+        print(temp_ms_chainwise)
+        print(pdb_values)
+        if len(temp_ms_chainwise)>0:
+            temp_mono_score_dict[values] = np.max(temp_ms_chainwise)
+        else:
+             temp_mono_score_dict[values] = 0
 
     pdb_profile_dict.get(pdb_values).ms_scores = temp_mono_score_dict
 

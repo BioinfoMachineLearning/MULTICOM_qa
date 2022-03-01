@@ -612,7 +612,7 @@ def get_dock_q_score(_inp):
 
 def get_dock_q_score_parallel_submit(_array):
     all_value = []
-    worker = 10*2 +4
+    worker = 20*2 +4
     with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
         result_futures = list(map(lambda x: executor.submit(get_dock_q_score, x), _array))
         for future in concurrent.futures.as_completed(result_futures):
@@ -850,16 +850,16 @@ def print_final_data_new(_file_name, _file_data, _chain_data, _dimer_data):
 # GLINTER_DIR ="/home/rsr3gt/anaconda3/envs/multi_eva/"
 def glinter_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cmaps_name, _glinter):
     GLINTER_DIR = _glinter
-    envs = GLINTER_DIR + "/scripts/set_env.sh"
+    envs = GLINTER_DIR + "scripts/set_env.sh"
     print(envs)
-#    os.system("export MKL_SERVICE_FORCE_INTEL=1")
+    os.system("export MKL_SERVICE_FORCE_INTEL=1")
  #   os.system("conda activate multi_eva")
     os.system("source " + str(envs))
 #    os.system("export MKL_SERVICE_FORCE_INTEL=1")
 
     name_1_list = os.path.basename(_first_pdb).split(".")[0]
     name_2_list = os.path.basename(_second_pdb).split(".")[0]
-    os.system("cd " + GLINTER_DIR)
+#    os.system("cd " + GLINTER_DIR)
     if _is_homodimer == True:
         cmd = GLINTER_DIR + "/scripts/build_homo.sh " + str(_first_pdb) + " " + str(_second_pdb) + " " + str(
             _out_dir) + " " + str(name_2_list)
