@@ -1,13 +1,14 @@
+import numpy as np
 import copy
 import csv
 import math
 import os
 import re
 import subprocess
-import numpy as np
+import time
 from Bio import pairwise2
-from PIL import Image as im
-import numpy as np
+# from PIL import Image as im
+import concurrent.futures
 
 
 class multimer:
@@ -59,7 +60,14 @@ def space_returner(_input):
         i = i + 1
     return space
 
-
+def added_warning_logs(_file, _msg):
+    # Open a file with access mode 'a'
+    file_object = open(_file, 'a')
+    # Append 'hello' at the end of file
+    file_object.write(_msg)
+    # Close the file
+    file_object.close()
+    return
 def find_lowest_gap(_target, _hit):
     aln_val = pairwise2.align.globalms(_target, _hit, 5, -4, -1, -0.1)
     chain_target = list(aln_val[0][0])
@@ -79,22 +87,25 @@ def convert_to_pdb(_pdb, _name):
     f.close()
     return _pdb
 
-def closest_key(_seq_fasta_dict,_fasta_string):
+
+def closest_key(_seq_fasta_dict, _fasta_string):
     val = []
     for key in _seq_fasta_dict:
-        val.append(find_lowest_gap(_seq_fasta_dict.get(key),_fasta_string))
+        val.append(find_lowest_gap(_seq_fasta_dict.get(key), _fasta_string))
     seq = min(val)
     index_closest = val.index(seq)
     return index_closest
 
-def sequence_finder(_seq_fasta_dict,_fasta_string):
+
+def sequence_finder(_seq_fasta_dict, _fasta_string):
     for key in _seq_fasta_dict:
         temp_fasta = _seq_fasta_dict.get(key)
         if temp_fasta == _fasta_string:
-            return  key
-    seq_ =  closest_key(_seq_fasta_dict,_fasta_string)
+            return key
+    seq_ = closest_key(_seq_fasta_dict, _fasta_string)
     # print(" closest_key ")
     return seq_
+
 
 class predicted_pdb_profile:
     # Monomer Score (MS)
@@ -114,10 +125,10 @@ class predicted_pdb_profile:
     cluster_chain = {}
     chain_cluster = {}
 
-
     pass
 
-def dimer_for_cmaps(_valid_dimer_combos,_temp_pdb_profile):
+
+def dimer_for_cmaps(_valid_dimer_combos, _temp_pdb_profile):
     list_dimer = []
     # _temp_list = [ ]
     # for values in _temp_pdb_profile.dimers:
@@ -134,7 +145,7 @@ def dimer_for_cmaps(_valid_dimer_combos,_temp_pdb_profile):
     for values in _temp_pdb_profile.dimers:
         chain_1 = _temp_pdb_profile.chain_cluster.get(values[0])
         chain_2 = _temp_pdb_profile.chain_cluster.get(values[1])
-        literal_chain_value = str(chain_1)+str(chain_2)
+        literal_chain_value = str(chain_1) + str(chain_2)
         if literal_chain_value in _valid_dimer_combos:
             list_dimer.append(values)
         else:
@@ -143,9 +154,11 @@ def dimer_for_cmaps(_valid_dimer_combos,_temp_pdb_profile):
                 list_dimer.append(values)
 
     return list_dimer
+
+
 def dir_maker(_dir_name):
     if not os.path.exists(_dir_name):
-        os.system("mkdir -p "+_dir_name)
+        os.system("mkdir -p " + _dir_name)
         return _dir_name
     else:
         print("Already exists ")
@@ -243,6 +256,7 @@ def read_fasta(_fasta):
 
     return output_array[1]
 
+
 def read_pdb(pdb):
     contents = []
     with open(pdb, "r") as f:
@@ -251,18 +265,13 @@ def read_pdb(pdb):
                 # pass
                 contents.append(line)
     return contents
-def chain_replacer (_pdb_file,_new_chain_name ):
+
+
+def chain_replacer(_pdb_file, _new_chain_name):
     _temp = copy.deepcopy(_pdb_file)
     for value in _temp:
         value.chain = _new_chain_name
-    return  _temp
-#
-# def if_transpose(__struct_cmap,__predict_cmap):
-#     s_len_a,s_len_b = __struct_cmap.shape
-#     p_len_a, p_len_b = __predict_cmap.shape
-#     if s_len_a == p_len_a and s
-#
-#
+    return _temp
 
 
 def pdb_from_array(_pdb, _filename):
@@ -305,21 +314,54 @@ def fix_serial(_array, _no=1):
 
 
 # MM_ALIGN_PATH = "/home/bdmlab/Documents/tools/MMalign"
-def get_MM_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
-                     _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb",_MM_ALIGN="/home/bdmlab/Documents/tools/MMalign"):
+# def get_MM_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
+#                  _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb",
+#                  _MM_ALIGN="/home/bdmlab/Documents/tools/MMalign"):
+#     MM_ALIGN_PATH = _MM_ALIGN
+#     contents = subprocess.check_output([MM_ALIGN_PATH, _true, _current])
+#     tm_list = []
+#
+#     for item in contents.decode("utf-8").split("\n"):
+#
+#         if "TM-score=" in item:
+#             tm_list.append(float(item.strip().split(" ")[1].strip()))
+#
+#     return np.min(tm_list)
 
-    MM_ALIGN_PATH = _MM_ALIGN
-    contents = subprocess.check_output([MM_ALIGN_PATH, _true, _current])
-    tm_list  = []
 
-    for item in contents.decode("utf-8").split("\n"):
+def get_MM_score(_arr):
+    MM_ALIGN_PATH = _arr[2]
+    # print(MM_ALIGN_PATH, _arr[0], _arr[1])
+    contents = subprocess.check_output([MM_ALIGN_PATH, _arr[0], _arr[1]])
+    try:
+        tm_list = []
 
-        if "TM-score=" in item:
+        for item in contents.decode("utf-8").split("\n"):
 
-            tm_list.append( float(item.strip().split(" ")[1].strip()))
+            if "TM-score=" in item:
+                tm_list.append(float(item.strip().split(" ")[1].strip()))
+
+        return np.min(tm_list)
+    except:
+        return  0.0
 
 
-    return np.min(tm_list)
+
+def get_MM_score_parallel_submit(_array,_CPU_COUNT):
+    all_value = []
+    worker = int(_CPU_COUNT)*2 +4
+    with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
+        result_futures = list(map(lambda x: executor.submit(get_MM_score, x), _array))
+        for future in concurrent.futures.as_completed(result_futures):
+            try:
+                # print('resutl is', future.result())
+                all_value.append(future.result())
+                # print(type(future.result()))
+            except Exception as e:
+                print('e is', e, type(e))
+                all_value.append(0)
+
+    return np.average(all_value)
 
 
 def correct_format(_pdb_row):
@@ -364,7 +406,7 @@ def save_multi_fasta(_dir, _map):
     for key in _map:
         fasta_value = _map.get(key)
         # print(key, fasta_value)
-        fasta_value = ">sequence_" + key+"\n"+fasta_value
+        fasta_value = ">sequence_" + key + "\n" + fasta_value
         write2File(_dir + "sequence_" + key + "_A.fasta", fasta_value)
         write2File(_dir + "sequence_" + key + "_B.fasta", fasta_value)
 
@@ -418,8 +460,8 @@ def monomer_pdb_filtering(_pdb, _dir):
 
         fasta_name = get_fasta_from_pdb_array(temp_monomer_pdb)
         fasta_value = ">sequence_" + chain + "\n" + fasta_name
-        fasta_file_name =  tar_dir + "/" + tar_name + "_chain_" + str(chain) + ".fasta"
-        write2File(_filename=fasta_file_name,_cont=fasta_value)
+        fasta_file_name = tar_dir + "/" + tar_name + "_chain_" + str(chain) + ".fasta"
+        write2File(_filename=fasta_file_name, _cont=fasta_value)
 
     return chain_finder
 
@@ -537,26 +579,60 @@ def get_CA_cmaps(_first_chain, _second_chain):
 # DOCK_Q_PATH = "/home/bdmlab/Documents/DockQ/DockQ.py"
 
 
-def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
-                     _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb",_DOCK_Q_PATH = "/home/bdmlab/Documents/DockQ/DockQ.py"):
-    DOCK_Q_PATH  = _DOCK_Q_PATH
-    contents = subprocess.check_output([DOCK_Q_PATH, _true, _current])
+# def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
+#                      _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb",
+#                      _DOCK_Q_PATH="/home/bdmlab/Documents/DockQ/DockQ.py"):
+#     DOCK_Q_PATH = _DOCK_Q_PATH
+#     contents = subprocess.check_output([DOCK_Q_PATH, _true, _current])
+#     dock_q_score = 0
+#     try:
+#         for item in contents.decode("utf-8").split("\n"):
+#             not_first_dock = True
+#             if "DockQ " in item:
+#                 if len(item.strip().split(" ")) == 2:
+#                     dock_q_score = item.strip().split(" ")[1].strip()
+#                     return float(dock_q_score)
+#     except:
+#         return 0.0
+
+
+def get_dock_q_score(_inp):
+    DOCK_Q_PATH = _inp[2]
+    contents = subprocess.check_output([DOCK_Q_PATH, _inp[0], _inp[1]])
     dock_q_score = 0
-    for item in contents.decode("utf-8").split("\n"):
-        not_first_dock = True
-        if "DockQ " in item:
-            if len(item.strip().split(" ")) == 2:
-                dock_q_score = item.strip().split(" ")[1].strip()
-                return float(dock_q_score)
+    try:
+        for item in contents.decode("utf-8").split("\n"):
+            not_first_dock = True
+            if "DockQ " in item:
+                if len(item.strip().split(" ")) == 2:
+                    dock_q_score = item.strip().split(" ")[1].strip()
+                    return float(dock_q_score)
+    except:
+        return 0.0
+
+def get_dock_q_score_parallel_submit(_array,_CPU_COUNT):
+    all_value = []
+    worker = int(_CPU_COUNT)*2 +4
+    with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
+        result_futures = list(map(lambda x: executor.submit(get_dock_q_score, x), _array))
+        for future in concurrent.futures.as_completed(result_futures):
+            try:
+                # print('resutl is', future.result())
+                all_value.append(future.result())
+                # print(type(future.result()))
+            except Exception as e:
+                print('e is', e, type(e))
+                all_value.append(0)
+
+    return np.average(all_value)
 
 
-def get_icps_score(_struct_cmap, _pred_cmap,_transpose):
+def get_icps_score(_struct_cmap, _pred_cmap, _transpose):
     first_cmap_copy = np.loadtxt(_struct_cmap)
     second_cmap_copy = np.loadtxt(_pred_cmap)
     # second_cmap_copy = np.load(_pred_cmap, allow_pickle=True)
     if _transpose:
         first_cmap_copy = np.transpose(first_cmap_copy)
-
 
     len_a, len_b = first_cmap_copy.shape
     icps_list = []
@@ -569,16 +645,16 @@ def get_icps_score(_struct_cmap, _pred_cmap,_transpose):
     return np.average(icps_list)
 
 
-def show_cmap_image(data, _name):
-    data = im.fromarray(data)
+# def show_cmap_image(data, _name):
+#     data = im.fromarray(data)
+#
+#     data = data.convert("L")
+#
+#     data.save(_name)
+#     return
 
-    data = data.convert("L")
 
-    data.save(_name)
-    return
-
-
-def get_recall(_struct_cmap, _pred_cmap,_transpose):
+def get_recall(_struct_cmap, _pred_cmap, _transpose):
     struct_cmap = np.loadtxt(_struct_cmap)
     pred_cmap = np.loadtxt(_pred_cmap)
     # pred_cmap = np.load(_pred_cmap, allow_pickle=True)
@@ -678,19 +754,20 @@ def print_final_data(_file_name, _file_data, _chain_data):
     head_row = ['Name', 'Monomer_score', 'Dimer_score', 'ICP_score', 'recall_score', 'final_score']
     report_individual_target(_header_row=head_row, _file_name=_file_name, _data_array=data_row)
 
-def get_header_string (_stoic,_dimer):
+
+def get_header_string(_stoic, _dimer):
     head_string = ["Name"]
     for monomer in _stoic:
-        head_string.append("MS_"+str(monomer))
+        head_string.append("MS_" + str(monomer))
 
     for _dimers in _dimer:
-        head_string.append("DS_"+str(_dimers))
+        head_string.append("DS_" + str(_dimers))
 
     for _dimers in _dimer:
-        head_string.append("ICPS_"+str(_dimers))
+        head_string.append("ICPS_" + str(_dimers))
 
     for _dimers in _dimer:
-        head_string.append( "R_"+str(_dimers))
+        head_string.append("R_" + str(_dimers))
     head_string.append("average_MS")
     head_string.append("average_DS")
     head_string.append("average_ICPS")
@@ -700,7 +777,7 @@ def get_header_string (_stoic,_dimer):
     return head_string
 
 
-def print_final_data_new(_file_name, _file_data, _chain_data,_dimer_data):
+def print_final_data_new(_file_name, _file_data, _chain_data, _dimer_data):
     _data_array = []
     all_chains_discovered = copy.deepcopy(_chain_data)
     dimer_interaction_discover = copy.deepcopy(_dimer_data)
@@ -713,7 +790,7 @@ def print_final_data_new(_file_name, _file_data, _chain_data,_dimer_data):
         temp_icps = []
         temp_recall = []
         temp_ds_score = []
-        total_values = [ ]
+        total_values = []
         # total_values.append(values)
         for monomers in all_chains_discovered:
             if temp.ms_scores.get(monomers) != None:
@@ -756,49 +833,56 @@ def print_final_data_new(_file_name, _file_data, _chain_data,_dimer_data):
         total_values.append(np.average(temp_icps))
         total_values.append(np.average(temp_recall))
         total_values.append(temp.multimer_scoring)
-        final_score = np.average([np.average(temp_ms_score),np.average(temp_ds_score),np.average(temp_icps),np.average(temp_recall),temp.multimer_scoring])
+        final_score = np.average(
+            [np.average(temp_ms_score), np.average(temp_ds_score), np.average(temp_icps), np.average(temp_recall),
+             temp.multimer_scoring])
         total_values.append(final_score)
 
-
-        data_row.append([values]+total_values)
+        data_row.append([values] + total_values)
 
     head_row = get_header_string(_chain_data, _dimer_data)
     # head_row = ['Name', 'Monomer_score', 'Dimer_score', 'ICP_score', 'recall_score', 'final_score']
     report_individual_target(_header_row=head_row, _file_name=_file_name, _data_array=data_row)
 
+
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/test/.cmap"))
 # print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/true/.cmap"))
 # GLINTER_DIR ="/home/rsr3gt/anaconda3/envs/multi_eva/"
-def glinter_runner(_first_pdb,_second_pdb,_out_dir,_is_homodimer,expected_cmaps_name,_glinter):
+def glinter_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cmaps_name, _glinter):
     GLINTER_DIR = _glinter
-    envs = GLINTER_DIR+"/scripts/set_env.sh"
+    envs = GLINTER_DIR + "scripts/set_env.sh"
     print(envs)
-    os.system("source "+str(envs))
+    os.system("export MKL_SERVICE_FORCE_INTEL=1")
+    os.system("source " + str(envs))
+#    os.system("cd "+GLINTER_DIR)
+#    os.system("export MKL_SERVICE_FORCE_INTEL=1")
     name_1_list = os.path.basename(_first_pdb).split(".")[0]
     name_2_list = os.path.basename(_second_pdb).split(".")[0]
-    os.system("cd "+GLINTER_DIR)
+#    os.system("cd " + GLINTER_DIR)
     if _is_homodimer == True:
-        cmd = GLINTER_DIR+"/scripts/build_homo.sh " +str(_first_pdb)+" "+str(_second_pdb)+ " "+str(_out_dir)+" "+str(name_2_list)
-        print(os.system(cmd))
+        cmd = GLINTER_DIR + "/scripts/build_homo.sh " + str(_first_pdb) + " " + str(_second_pdb) + " " + str(
+            _out_dir) + " " + str(name_2_list)
+        print(os.system( cmd))
     else:
-        cmd = GLINTER_DIR + "/scripts/build_hetero.sh " + str(_first_pdb) + " " + str(_second_pdb) + " " + str(_out_dir)
+        cmd = GLINTER_DIR + "/scripts/build_hetero.sh " + str(_first_pdb.replace("//","/")) + " " + str(_second_pdb.replace("//","/")) + " " + str(_out_dir.replace("//","/"))
         print(os.system(cmd))
-    name = str(name_1_list)+":"+str(name_2_list)
-    cmap_file = _out_dir+name+"/score_mat.pkl"
+    name = str(name_1_list) + ":" + str(name_2_list)
+    cmap_file = _out_dir + name + "/score_mat.pkl"
 
-#    content =  np.load(cmap_file, allow_pickle=True)
+    #    content =  np.load(cmap_file, allow_pickle=True)
     print(cmd)
     print(cmap_file)
     if os.path.exists(cmap_file):
-        content =  np.load(cmap_file, allow_pickle=True)
-        _out_dir= _out_dir.replace("//","/")
-        dest_file  = _out_dir.replace("extras/","")+name+".cmap"
+        content = np.load(cmap_file, allow_pickle=True)
+        _out_dir = _out_dir.replace("//", "/")
+        dest_file = _out_dir.replace("extras/", "") + name + ".cmap"
         print(dest_file)
-        np.savetxt(expected_cmaps_name,content)
+        np.savetxt(expected_cmaps_name, content)
         # cmd=  "cp "+cmap_file+" "+dest_file
-#        os.system(cmd)
+    #        os.system(cmd)
 
     return
+
 
 def check_single_exists(_file):
     if os.path.exists(_file):
@@ -808,15 +892,16 @@ def check_single_exists(_file):
         return False
 
 
-def check_path_exists(_PARIWISE_QA_SCRIPT ,_TM_SCORE_PATH,_Q_SCORE ,_DOCK_Q_PATH,_MM_ALIGN ,_GLINTER_DIR ):
+def check_path_exists(_PARIWISE_QA_SCRIPT, _TM_SCORE_PATH, _Q_SCORE, _DOCK_Q_PATH, _MM_ALIGN, _GLINTER_DIR):
     print(_PARIWISE_QA_SCRIPT)
     print(_TM_SCORE_PATH)
     print(_Q_SCORE)
     print(_DOCK_Q_PATH)
     print(_MM_ALIGN)
     print(_GLINTER_DIR)
-    if check_single_exists(_PARIWISE_QA_SCRIPT) and check_single_exists(_TM_SCORE_PATH) and check_single_exists(  _Q_SCORE) and check_single_exists(_DOCK_Q_PATH) and check_single_exists(_MM_ALIGN) and check_single_exists(_GLINTER_DIR):
+    if check_single_exists(_PARIWISE_QA_SCRIPT) and check_single_exists(_TM_SCORE_PATH) and check_single_exists(
+            _Q_SCORE) and check_single_exists(_DOCK_Q_PATH) and check_single_exists(_MM_ALIGN) and check_single_exists(
+        _GLINTER_DIR):
         return True
     else:
         return False
-

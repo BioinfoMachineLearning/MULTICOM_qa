@@ -36,19 +36,20 @@ import eva_utils as eva_util
 #python multi_eva_modified.py ../data/fasta_casp14/casp_capri_fasta/T1032.fasta /home/rsr3gt/programs/Multi_Eva/Multimet_evatest_samples/predictions/T1032_lite/ A2 /home/rsr3gt/programs/Multi_Eva/data/pdbs_casp_alphafold/T1032/ /home/rsr3gt/programs/Multi_Eva/output/Qs_T1032/
 
 
-#
+
 # monomer_sequences_dir = "/home/bdmlab/T1032.fasta"
 # input_dir ="/home/bdmlab/new_tests/pred/"
 # stoichiometry = "A2"
 # predicted_structures = "/home/bdmlab/T1032/"
 # output_dir = "/home/bdmlab/new_tests/"
-# predicted_structures_AF2 = "/home/bdmlab/T1032/"
+# predicted_structures_AF2 = "/home/bdmlab/af_2/"
 #
 monomer_sequences_dir = sys.argv[1]
 input_dir = sys.argv[2]
 stoichiometry = sys.argv[3]
 predicted_structures_AF2 = sys.argv[4]
-output_dir = sys.argv[5]
+CPU_COUNT = sys.argv[5].strip()
+output_dir = sys.argv[6]
 
 if os.path.isfile(monomer_sequences_dir):
     print(str(monomer_sequences_dir) + " Found")
@@ -80,7 +81,7 @@ pred_structures = eva_util.specific_filename_reader(predicted_structures_AF2, ""
 predicted_cmap_dir = eva_util.dir_maker(output_dir + "predicted_cmaps/")
 fasta_stoic_dict = eva_util.multi_fasta_reader(_seq_file=monomer_sequences_dir)
 eva_util.save_multi_fasta(fasta_dir, fasta_stoic_dict)
-
+warning_file = output_dir+"warning.log"
 for values in pred_structures:
     # get_fasta_from_pdb_array
     temp_fasta_values = eva_utils.get_fasta_from_pdb_array(
@@ -137,13 +138,16 @@ print(" Ended seperating of Chains")
 print("Multimer scoring started")
 for pdb_1 in predicted_pdb_files:
     # print(pdb_1)
-    temp_MM_score = []
+    temp_MM_score_command = []
+    mm_valie = 0
     for pdb_2 in predicted_pdb_files:
         if pdb_1 != pdb_2:
-            mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
-            temp_MM_score.append(mm_valie)
+            # mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
+            temp_MM_score_command.append([input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN])
+    mm_valie =  eva_utils.get_MM_score_parallel_submit(temp_MM_score_command,CPU_COUNT)
+    print(mm_valie)
     # print(str(np.average(temp_MM_score)))
-    pdb_profile_dict.get(pdb_1).multimer_scoring = np.average(temp_MM_score)
+    pdb_profile_dict.get(pdb_1).multimer_scoring =mm_valie
 print("Multimer scoring Done")
 print("Mapping chains to clusters")
 #######chain cluster mapper
@@ -169,17 +173,17 @@ print("Monomer scoring started")
 for true_squence in fasta_stoic_dict:
     current_dir_name = predicted_monomer_chains_dir + "/sequence_" + str(true_squence) + "/"
     eva_util.dir_maker(current_dir_name)
-    print(true_sequence)
+    print(true_squence)
     for _pdb in pdb_profile_dict:
         print(_pdb)
         temp_pdb = pdb_profile_dict.get(_pdb).cluster_chain.get(true_squence)
-    
-        for chains in temp_pdb:
-            print(chains)
-            monomer_pdb_name = predicted_monomer_dir + str(_pdb) + "/" + str(_pdb) + "_chain_" + str(chains) + ".pdb"
-            if os.path.exists(monomer_pdb_name):
-                os.system("cp " + monomer_pdb_name + " " + current_dir_name)
-
+        if temp_pdb != None:
+            for chains in temp_pdb:
+                monomer_pdb_name = predicted_monomer_dir + str(_pdb) + "/" + str(_pdb) + "_chain_" + str(chains) + ".pdb"
+                if os.path.exists(monomer_pdb_name):
+                    os.system("cp " + monomer_pdb_name + " " + current_dir_name)
+        else:
+            eva_util.added_warning_logs(_file=warning_file,_msg="Monomer division "+ str(_pdb)+" sequence "+str(true_squence)+"\n")
 ##################### MONOMER SCORING PART #################################
 for chain_value in fasta_stoic_dict:
     temp_chain_dir = predicted_monomer_chains_dir + "sequence_" + str(chain_value) + "/"
@@ -226,21 +230,25 @@ for pdb in pdb_profile_dict:
     temp_all_dimer_combination = copy.deepcopy(all_dimer_combination)
     for dimers in all_dimer_combination:
         if dimers[0] == dimers[1]:
-            len_a_dimers = len(temp.cluster_chain.get(str(dimers[0])))
-            if len_a_dimers == 1:
-                temp_all_dimer_combination.remove(dimers)
+            if temp.cluster_chain.get(str(dimers[0])) != None:
+                len_a_dimers = len(temp.cluster_chain.get(str(dimers[0])))
+            
+                if len_a_dimers == 1:
+                    temp_all_dimer_combination.remove(dimers)
 
     for dimers in temp_all_dimer_combination:
         first_chain_list = temp.cluster_chain.get(str(dimers[0]))
         second_chain_list = temp.cluster_chain.get(str(dimers[1]))
-        for first_chain in first_chain_list:
-            for second_chain in second_chain_list:
-                if first_chain != second_chain:
-                    first_chain_pdb = temp.chain_skeleton_CA[first_chain]
-                    second_chain_pdb = temp.chain_skeleton_CA[second_chain]
-                    if eva_util.if_contact(first_chain_pdb, second_chain_pdb):
-                        temp_dimer.append(str(first_chain) + str(second_chain))
-                        all_pdb_dimers_contact.append(str(pdb) + "_" + str(dimers[0]) + str(dimers[1]))
+
+        if first_chain_list != None and second_chain_list !=None:
+            for first_chain in first_chain_list:
+                for second_chain in second_chain_list:
+                    if first_chain != second_chain:
+                        first_chain_pdb = temp.chain_skeleton_CA[first_chain]
+                        second_chain_pdb = temp.chain_skeleton_CA[second_chain]
+                        if eva_util.if_contact(first_chain_pdb, second_chain_pdb):
+                            temp_dimer.append(str(first_chain) + str(second_chain))
+                            all_pdb_dimers_contact.append(str(pdb) + "_" + str(dimers[0]) + str(dimers[1]))
     rr_removed_temp_dimer = []
     for values in temp_dimer:
         temp_values = []
@@ -370,8 +378,8 @@ for pdb in pdb_profile_dict:
         temp_same_dimer_wise = []
         ##### same type of dimer wise
         for first_chain in all_specific_target_dimer:
-
-            temp_dimer_chain_wise = []
+            ####appen all here in temp_dimer_chain_wise
+            temp_dimer_chain_wise_command = []
             chain_first = dimer_strcutures_dir + "sequence_" + str(values) + "/" + str(first_chain) + ".pdb"
             # print(chain_first)
             #####specific dimer wise
@@ -379,14 +387,13 @@ for pdb in pdb_profile_dict:
                 chain_second = dimer_strcutures_dir + "sequence_" + str(values) + "/" + predicted_dimer + ".pdb"
                 # print(chain_second)
                 if chain_first != chain_second:
-                    print(predicted_dimer)
-                    try:
-                        temp_dimer_chain_wise.append(
-                            eva_util.get_dock_q_score(_true=chain_first, _current=chain_second, _DOCK_Q_PATH=DOCK_Q_PATH))
-                    except:
-                        temp_dimer_chain_wise.append(0)
+                    # print("dimer type "+str(predicted_dimer))
+                    temp_dimer_chain_wise_command.append([chain_first, chain_second, DOCK_Q_PATH])
 
-            temp_same_dimer_wise.append(np.average(temp_dimer_chain_wise))
+            # temp_same_dimer_wise.append(np.average(temp_dimer_chain_wise))
+            avg_value= eva_utils.get_dock_q_score_parallel_submit(temp_dimer_chain_wise_command,CPU_COUNT)
+            print(avg_value)
+            temp_same_dimer_wise.append(avg_value)
         if len(temp_same_dimer_wise) != 0:
             a_dimer_score_dict[values] = np.max(temp_same_dimer_wise)
         else:
@@ -469,11 +476,16 @@ for pdb_values in pdb_profile_dict:
         temp_ms_chainwise = []
         # a_monomer_score = monomer_score_dict.get(str(values)).get(pdb_values)
         monomer_scores_targetwise = monomer_score_dict.get(str(values))
-        for ms in monomer_scores_targetwise:
-            if pdb_values in ms:
-                temp_ms_chainwise.append(monomer_scores_targetwise.get(ms))
-
-        temp_mono_score_dict[values] = np.max(temp_ms_chainwise)
+        if monomer_scores_targetwise != None:
+            for ms in monomer_scores_targetwise:
+                if pdb_values in ms:
+                    temp_ms_chainwise.append(monomer_scores_targetwise.get(ms))
+        print(temp_ms_chainwise)
+        print(pdb_values)
+        if len(temp_ms_chainwise)>0:
+            temp_mono_score_dict[values] = np.max(temp_ms_chainwise)
+        else:
+             temp_mono_score_dict[values] = 0
 
     pdb_profile_dict.get(pdb_values).ms_scores = temp_mono_score_dict
 
