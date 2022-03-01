@@ -48,7 +48,8 @@ monomer_sequences_dir = sys.argv[1]
 input_dir = sys.argv[2]
 stoichiometry = sys.argv[3]
 predicted_structures_AF2 = sys.argv[4]
-output_dir = sys.argv[5]
+CPU_COUNT = sys.argv[5].strip()
+output_dir = sys.argv[6]
 
 if os.path.isfile(monomer_sequences_dir):
     print(str(monomer_sequences_dir) + " Found")
@@ -143,7 +144,7 @@ for pdb_1 in predicted_pdb_files:
         if pdb_1 != pdb_2:
             # mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
             temp_MM_score_command.append([input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN])
-    mm_valie =  eva_utils.get_MM_score_parallel_submit(temp_MM_score_command)
+    mm_valie =  eva_utils.get_MM_score_parallel_submit(temp_MM_score_command,CPU_COUNT)
     print(mm_valie)
     # print(str(np.average(temp_MM_score)))
     pdb_profile_dict.get(pdb_1).multimer_scoring =mm_valie
@@ -390,7 +391,7 @@ for pdb in pdb_profile_dict:
                     temp_dimer_chain_wise_command.append([chain_first, chain_second, DOCK_Q_PATH])
 
             # temp_same_dimer_wise.append(np.average(temp_dimer_chain_wise))
-            avg_value= eva_utils.get_dock_q_score_parallel_submit(temp_dimer_chain_wise_command)
+            avg_value= eva_utils.get_dock_q_score_parallel_submit(temp_dimer_chain_wise_command,CPU_COUNT)
             print(avg_value)
             temp_same_dimer_wise.append(avg_value)
         if len(temp_same_dimer_wise) != 0:

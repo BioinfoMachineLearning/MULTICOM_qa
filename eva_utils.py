@@ -5,9 +5,9 @@ import math
 import os
 import re
 import subprocess
-#import numpy as np
+import time
 from Bio import pairwise2
-from PIL import Image as im
+# from PIL import Image as im
 import concurrent.futures
 
 
@@ -347,9 +347,9 @@ def get_MM_score(_arr):
 
 
 
-def get_MM_score_parallel_submit(_array):
+def get_MM_score_parallel_submit(_array,_CPU_COUNT):
     all_value = []
-    worker = 10*2 +4
+    worker = int(_CPU_COUNT)*2 +4
     with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
         result_futures = list(map(lambda x: executor.submit(get_MM_score, x), _array))
         for future in concurrent.futures.as_completed(result_futures):
@@ -610,9 +610,9 @@ def get_dock_q_score(_inp):
     except:
         return 0.0
 
-def get_dock_q_score_parallel_submit(_array):
+def get_dock_q_score_parallel_submit(_array,_CPU_COUNT):
     all_value = []
-    worker = 20*2 +4
+    worker = int(_CPU_COUNT)*2 +4
     with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
         result_futures = list(map(lambda x: executor.submit(get_dock_q_score, x), _array))
         for future in concurrent.futures.as_completed(result_futures):
@@ -645,13 +645,13 @@ def get_icps_score(_struct_cmap, _pred_cmap, _transpose):
     return np.average(icps_list)
 
 
-def show_cmap_image(data, _name):
-    data = im.fromarray(data)
-
-    data = data.convert("L")
-
-    data.save(_name)
-    return
+# def show_cmap_image(data, _name):
+#     data = im.fromarray(data)
+#
+#     data = data.convert("L")
+#
+#     data.save(_name)
+#     return
 
 
 def get_recall(_struct_cmap, _pred_cmap, _transpose):
@@ -856,7 +856,7 @@ def glinter_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cm
  #   os.system("conda activate multi_eva")
     os.system("source " + str(envs))
 #    os.system("export MKL_SERVICE_FORCE_INTEL=1")
-
+    time.sleep(60)
     name_1_list = os.path.basename(_first_pdb).split(".")[0]
     name_2_list = os.path.basename(_second_pdb).split(".")[0]
 #    os.system("cd " + GLINTER_DIR)
