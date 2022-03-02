@@ -349,7 +349,7 @@ def get_MM_score(_arr):
 
 def get_MM_score_parallel_submit(_array,_CPU_COUNT):
     all_value = []
-    worker = int(_CPU_COUNT)
+    worker = int(_CPU_COUNT)*2 +4
     with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
         result_futures = list(map(lambda x: executor.submit(get_MM_score, x), _array))
         for future in concurrent.futures.as_completed(result_futures):
@@ -612,7 +612,7 @@ def get_dock_q_score(_inp):
 
 def get_dock_q_score_parallel_submit(_array,_CPU_COUNT):
     all_value = []
-    worker = int(_CPU_COUNT)
+    worker = int(_CPU_COUNT)*2 +4
     with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
         result_futures = list(map(lambda x: executor.submit(get_dock_q_score, x), _array))
         for future in concurrent.futures.as_completed(result_futures):
