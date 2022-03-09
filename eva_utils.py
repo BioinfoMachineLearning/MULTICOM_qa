@@ -75,7 +75,7 @@ def find_lowest_gap(_target, _hit):
     # print(chain_target)
     # print(chain_hit)
 
-    return chain_hit.count('-')
+    return chain_hit.count('-')/len(chain_hit)
 
 
 def convert_to_pdb(_pdb, _name):
@@ -634,13 +634,14 @@ def get_icps_score(_struct_cmap, _pred_cmap, _transpose):
     if _transpose:
         first_cmap_copy = np.transpose(first_cmap_copy)
 
-    len_a, len_b = first_cmap_copy.shape
+    len_a, len_b = second_cmap_copy.shape
     icps_list = []
     con_number = np.count_nonzero(first_cmap_copy)
     for i in range(con_number):
         (x, y) = np.unravel_index(np.argmax(first_cmap_copy, axis=None), first_cmap_copy.shape)
         first_cmap_copy[x][y] = 0
-        icps_list.append(second_cmap_copy[x][y])
+        if x < len_a and y < len_b:
+            icps_list.append(second_cmap_copy[x][y])
 
     return np.average(icps_list)
 

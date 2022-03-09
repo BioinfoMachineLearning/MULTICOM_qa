@@ -36,13 +36,14 @@ import eva_utils as eva_util
 #python multi_eva_modified.py ../data/fasta_casp14/casp_capri_fasta/T1032.fasta /home/rsr3gt/programs/Multi_Eva/Multimet_evatest_samples/predictions/T1032_lite/ A2 /home/rsr3gt/programs/Multi_Eva/data/pdbs_casp_alphafold/T1032/ /home/rsr3gt/programs/Multi_Eva/output/Qs_T1032/
 
 
-
-# monomer_sequences_dir = "/home/bdmlab/T1032.fasta"
-# input_dir ="/home/bdmlab/new_tests/pred/"
-# stoichiometry = "A2"
-# predicted_structures = "/home/bdmlab/T1032/"
-# output_dir = "/home/bdmlab/new_tests/"
-# predicted_structures_AF2 = "/home/bdmlab/af_2/"
+#
+# monomer_sequences_dir = "/home/bdmlab/H1097/H1097.fasta"
+# input_dir ="/home/bdmlab/H1097/predictions/"
+# stoichiometry = "A1B1C1D1E1"
+# predicted_structures = "/home/bdmlab/H1097/predictions/"
+# output_dir = "/home/bdmlab/H1097/output/"
+# CPU_COUNT=10
+# predicted_structures_AF2 = "/home/bdmlab/H1097/af2/"
 #
 monomer_sequences_dir = sys.argv[1]
 input_dir = sys.argv[2]

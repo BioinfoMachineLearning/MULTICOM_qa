@@ -11,12 +11,12 @@ class config:
         MM_ALIGN_PATH = "/home/bdmlab/Documents/tools/MMalign"
     elif "home_pc" == DEVICE:
         print("home_pc")
-        PARIWISE_QA_SCRIPT = "/home/bdmlab/pairwise_model_eva.pl"
-        Q_SCORE = "/home/bdmlab/pairwiseQA/q_score"
-        TM_SCORE_PATH = "/home/bdmlab/Documents/tools/TMscore"
-        MM_ALIGN_PATH = "/home/bdmlab/Documents/tools/MMalign"
+        PARIWISE_QA_SCRIPT = "/home/bdmlab/tools/pairwise_model_eva.pl"
+        Q_SCORE = "/home/bdmlab/tools/pairwiseQA/q_score"
+        TM_SCORE_PATH = "/home/bdmlab/tools/TMscore"
+        MM_ALIGN_PATH = "/home/bdmlab/tools/MMalign"
         GLINTER_DIR = "/home/bdmlab/anaconda3/envs/multi_eva/"
-        DOCK_Q_PATH = "/home/bdmlab/Documents/DockQ/DockQ.py"
+        DOCK_Q_PATH = "/home/bdmlab/tools/DockQ/DockQ.py"
     elif "Lily" == DEVICE:
         PARIWISE_QA_SCRIPT = "/home/rsr3gt/programs/tools/pairwise_model_eva.pl"
         Q_SCORE = "/home/rsr3gt/programs/tools/pairwiseQA/q_score"
