@@ -37,20 +37,20 @@ import eva_utils as eva_util
 
 
 #
-# monomer_sequences_dir = "/home/bdmlab/H1097/H1097.fasta"
-# input_dir ="/home/bdmlab/H1097/predictions/"
-# stoichiometry = "A1B1C1D1E1"
-# predicted_structures = "/home/bdmlab/H1097/predictions/"
-# output_dir = "/home/bdmlab/H1097/output/"
-# CPU_COUNT=10
-# predicted_structures_AF2 = "/home/bdmlab/H1097/af2/"
+monomer_sequences_dir = "/home/bdmlab/H1097/H1097.fasta"
+input_dir ="/home/bdmlab/H1097/predictions/"
+stoichiometry = "A1B1C1D1E1"
+predicted_structures = "/home/bdmlab/H1097/predictions/"
+output_dir = "/home/bdmlab/H1097/output/"
+CPU_COUNT=10
+predicted_structures_AF2 = "/home/bdmlab/H1097/af2/"
 #
-monomer_sequences_dir = sys.argv[1]
-input_dir = sys.argv[2]
-stoichiometry = sys.argv[3]
-predicted_structures_AF2 = sys.argv[4]
-CPU_COUNT = sys.argv[5].strip()
-output_dir = sys.argv[6]
+# monomer_sequences_dir = sys.argv[1]
+# input_dir = sys.argv[2]
+# stoichiometry = sys.argv[3]
+# predicted_structures_AF2 = sys.argv[4]
+# CPU_COUNT = sys.argv[5].strip()
+# output_dir = sys.argv[6]
 
 if os.path.isfile(monomer_sequences_dir):
     print(str(monomer_sequences_dir) + " Found")
@@ -191,10 +191,14 @@ for chain_value in fasta_stoic_dict:
     # print(predicted_monomer_dir + "/**/*"+"_chain_"+str(chain_value))
     all_monomer_chained_files = glob.glob(predicted_monomer_dir + "/**/*" + "_chain_" + str(chain_value) + ".pdb",
                                           recursive=True)
-    cmd = "perl " + PARIWISE_QA_SCRIPT + " " + temp_chain_dir + " " + fasta_dir + "sequence_" + str(
-        chain_value) + "_A.fasta" + " " + Q_SCORE + " " + TM_SCORE_PATH + " " + chain_value + " " + monomer_score_dir
-    print(cmd)
-    os.system(cmd)
+    monomer_score_file =  monomer_score_dir+str(chain_value)+".tm"
+    if not os.path.exists(monomer_score_file):
+        cmd = "perl " + PARIWISE_QA_SCRIPT + " " + temp_chain_dir + " " + fasta_dir + "sequence_" + str(
+            chain_value) + "_A.fasta" + " " + Q_SCORE + " " + TM_SCORE_PATH + " " + chain_value + " " + monomer_score_dir
+        print(cmd)
+        os.system(cmd)
+    else:
+        print(str(monomer_score_file)+" already exists")
 print("Monomer scoring started")
 #################### MONOMER SCORING PART #################################
 end_time_start = time.perf_counter()
