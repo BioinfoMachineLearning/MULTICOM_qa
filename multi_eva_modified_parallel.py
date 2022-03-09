@@ -137,18 +137,23 @@ for pdb in predicted_pdb_files:
     pdb_profile_dict[pdb] = temp_predicted_pdb_profile
 print(" Ended seperating of Chains")
 print("Multimer scoring started")
-for pdb_1 in predicted_pdb_files:
-    # print(pdb_1)
-    temp_MM_score_command = []
-    mm_valie = 0
-    for pdb_2 in predicted_pdb_files:
-        if pdb_1 != pdb_2:
-            # mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
-            temp_MM_score_command.append([input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN])
-    mm_valie =  eva_utils.get_MM_score_parallel_submit(temp_MM_score_command,CPU_COUNT)
-    print(mm_valie)
-    # print(str(np.average(temp_MM_score)))
-    pdb_profile_dict.get(pdb_1).multimer_scoring =mm_valie
+multimer_score_file = score_dir+"multimer_score.txt"
+if not os.path.exists(multimer_score_file):
+    for pdb_1 in predicted_pdb_files:
+        # print(pdb_1)
+        temp_MM_score_command = []
+        mm_valie = 0
+        for pdb_2 in predicted_pdb_files:
+            if pdb_1 != pdb_2:
+                # mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
+                temp_MM_score_command.append([input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN])
+        mm_valie =  eva_utils.get_MM_score_parallel_submit(temp_MM_score_command,CPU_COUNT)
+        print(mm_valie)
+        # print(str(np.average(temp_MM_score)))
+        pdb_profile_dict.get(pdb_1).multimer_scoring =mm_valie
+
+eva_utils.save_mm_score(pdb_profile_dict,multimer_score_file)
+
 print("Multimer scoring Done")
 print("Mapping chains to clusters")
 #######chain cluster mapper
@@ -471,6 +476,17 @@ for monomers in fasta_stoic_dict:
     monomer_score_file = monomer_score_dir + "/" + str(monomers) + ".tm"
     monomer_score_dict[monomers] = eva_util.read_monomer_score(_path=monomer_score_file)
 # print("FINAL SCORE  CALULCATOR")
+mm_score_dict = {}
+if os.path.exists(multimer_score_file):
+    mm_score_dict = eva_util.read_mm_score(_path=multimer_score_file)
+
+for values in mm_score_dict:
+    temp_pdb_profile = pdb_profile_dict.get(values)
+    if mm_score_dict.get(values) != None:
+        temp_pdb_profile.multimer_scoring = mm_score_dict.get(values)
+
+    else:
+        temp_pdb_profile.multimer_scoring = 0
 
 
 for pdb_values in pdb_profile_dict:

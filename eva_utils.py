@@ -690,6 +690,18 @@ def read_monomer_score(_path="/home/bdmlab/multi_eva_test/T1038_LITE/score/monom
         out_dict[name] = float(values.split(" ")[1].strip())
     return out_dict
 
+def read_mm_score(_path="/home/bdmlab/multi_eva_test/T1038_LITE/score/monomer/A.tm"):
+    out_dict = {}
+    file = open(_path, "r")
+    output_array = []
+    if file.mode == 'r':
+        output_array = file.read().strip().splitlines()
+        file.close()
+    for values in output_array:
+        name = values.split(" ")[0].strip()
+        out_dict[name] = float(values.split(" ")[1].strip())
+    return out_dict
+
 
 def report_individual_target(_header_row, _data_array, _file_name):
     data_array = copy.deepcopy(_data_array)
@@ -906,3 +918,12 @@ def check_path_exists(_PARIWISE_QA_SCRIPT, _TM_SCORE_PATH, _Q_SCORE, _DOCK_Q_PAT
         return True
     else:
         return False
+
+
+def save_mm_score (_pdb_dict,_file_name):
+    mm_string = ""
+    for values in copy.deepcopy(_pdb_dict):
+        temp_string = str(values)+" "+ str(_pdb_dict.get(values).multimer_scoring)+"\n"
+        mm_string = mm_string+temp_string
+
+    write2File(_file_name,mm_string)
