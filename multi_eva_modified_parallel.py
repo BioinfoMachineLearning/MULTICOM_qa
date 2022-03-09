@@ -152,7 +152,7 @@ if not os.path.exists(multimer_score_file):
         # print(str(np.average(temp_MM_score)))
         pdb_profile_dict.get(pdb_1).multimer_scoring =mm_valie
 
-eva_utils.save_mm_score(pdb_profile_dict,multimer_score_file)
+    eva_utils.save_mm_score(pdb_profile_dict,multimer_score_file)
 
 print("Multimer scoring Done")
 print("Mapping chains to clusters")
