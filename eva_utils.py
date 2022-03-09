@@ -75,7 +75,7 @@ def find_lowest_gap(_target, _hit):
     # print(chain_target)
     # print(chain_hit)
 
-    return chain_hit.count('-')
+    return chain_hit.count('-')/len(chain_hit)
 
 
 def convert_to_pdb(_pdb, _name):
@@ -598,9 +598,9 @@ def get_CA_cmaps(_first_chain, _second_chain):
 
 def get_dock_q_score(_inp):
     DOCK_Q_PATH = _inp[2]
-    contents = subprocess.check_output([DOCK_Q_PATH, _inp[0], _inp[1]])
     dock_q_score = 0
     try:
+        contents = subprocess.check_output([DOCK_Q_PATH, _inp[0], _inp[1]])
         for item in contents.decode("utf-8").split("\n"):
             not_first_dock = True
             if "DockQ " in item:
@@ -608,7 +608,17 @@ def get_dock_q_score(_inp):
                     dock_q_score = item.strip().split(" ")[1].strip()
                     return float(dock_q_score)
     except:
-        return 0.0
+        try:
+            contents = subprocess.check_output([DOCK_Q_PATH, _inp[1], _inp[0]])
+            for item in contents.decode("utf-8").split("\n"):
+                not_first_dock = True
+                if "DockQ " in item:
+                    if len(item.strip().split(" ")) == 2:
+                        dock_q_score = item.strip().split(" ")[1].strip()
+                        return float(dock_q_score)
+        except:
+            return 0
+
 
 def get_dock_q_score_parallel_submit(_array,_CPU_COUNT):
     all_value = []
@@ -619,6 +629,7 @@ def get_dock_q_score_parallel_submit(_array,_CPU_COUNT):
             try:
                 # print('resutl is', future.result())
                 all_value.append(future.result())
+                print(future.result())
                 # print(type(future.result()))
             except Exception as e:
                 print('e is', e, type(e))
@@ -634,13 +645,14 @@ def get_icps_score(_struct_cmap, _pred_cmap, _transpose):
     if _transpose:
         first_cmap_copy = np.transpose(first_cmap_copy)
 
-    len_a, len_b = first_cmap_copy.shape
+    len_a, len_b = second_cmap_copy.shape
     icps_list = []
     con_number = np.count_nonzero(first_cmap_copy)
     for i in range(con_number):
         (x, y) = np.unravel_index(np.argmax(first_cmap_copy, axis=None), first_cmap_copy.shape)
         first_cmap_copy[x][y] = 0
-        icps_list.append(second_cmap_copy[x][y])
+        if x < len_a and y < len_b:
+            icps_list.append(second_cmap_copy[x][y])
 
     return np.average(icps_list)
 
@@ -689,6 +701,18 @@ def read_monomer_score(_path="/home/bdmlab/multi_eva_test/T1038_LITE/score/monom
         out_dict[name] = float(values.split(" ")[1].strip())
     return out_dict
 
+def read_mm_score(_path="/home/bdmlab/multi_eva_test/T1038_LITE/score/monomer/A.tm"):
+    out_dict = {}
+    file = open(_path, "r")
+    output_array = []
+    if file.mode == 'r':
+        output_array = file.read().strip().splitlines()
+        file.close()
+    for values in output_array:
+        name = values.split(" ")[0].strip()
+        out_dict[name] = float(values.split(" ")[1].strip())
+    return out_dict
+
 
 def report_individual_target(_header_row, _data_array, _file_name):
     data_array = copy.deepcopy(_data_array)
@@ -730,19 +754,19 @@ def print_final_data(_file_name, _file_data, _chain_data):
         temp_recall = []
         temp_ds_score = []
         for monomers in all_chains_discovered:
-            temp_ms_score.append(float(temp.ms_scores.get(monomers)))
+            temp_ms_score.append(replace_nan(float(temp.ms_scores.get(monomers))))
         ms = replace_nan(np.average(temp_ms_score))
 
         for dimers in temp.dimers:
-            temp_ds_score.append(temp.ds_scores.get(dimers))
+            temp_ds_score.append(replace_nan(float(temp.ds_scores.get(dimers))))
         ds = replace_nan(np.average(temp_ds_score))
 
         for dimers in temp.dimers:
-            temp_icps.append(temp.icps_scores.get(dimers))
+            temp_icps.append(replace_nan(float(temp.icps_scores.get(dimers))))
         is_c = replace_nan(np.average(temp_icps))
 
         for dimers in temp.dimers:
-            temp_recall.append(temp.recall.get(dimers))
+            temp_recall.append(replace_nan(float(temp.recall.get(dimers))))
 
         rec = replace_nan(np.average(temp_recall))
 
@@ -794,8 +818,8 @@ def print_final_data_new(_file_name, _file_data, _chain_data, _dimer_data):
         # total_values.append(values)
         for monomers in all_chains_discovered:
             if temp.ms_scores.get(monomers) != None:
-                temp_ms_score.append(float(temp.ms_scores.get(monomers)))
-                total_values.append(float(temp.ms_scores.get(monomers)))
+                temp_ms_score.append( replace_nan(float(temp.ms_scores.get(monomers))))
+                total_values.append( replace_nan(float(temp.ms_scores.get(monomers))))
             else:
                 temp_ms_score.append(0)
                 total_values.append(0)
@@ -804,8 +828,8 @@ def print_final_data_new(_file_name, _file_data, _chain_data, _dimer_data):
 
         for dimers in dimer_interaction_discover:
             if temp.ds_scores.get(dimers) != None:
-                temp_ds_score.append(temp.ds_scores.get(dimers))
-                total_values.append(float(temp.ds_scores.get(dimers)))
+                temp_ds_score.append( replace_nan(temp.ds_scores.get(dimers)))
+                total_values.append( replace_nan(float(temp.ds_scores.get(dimers))))
             else:
                 total_values.append(0)
                 temp_ds_score.append(0)
@@ -814,16 +838,16 @@ def print_final_data_new(_file_name, _file_data, _chain_data, _dimer_data):
 
         for dimers in dimer_interaction_discover:
             if temp.icps_scores.get(dimers) != None:
-                temp_icps.append(temp.icps_scores.get(dimers))
-                total_values.append(temp.icps_scores.get(dimers))
+                temp_icps.append( replace_nan(temp.icps_scores.get(dimers)))
+                total_values.append( replace_nan(temp.icps_scores.get(dimers)))
             else:
                 total_values.append(0)
                 temp_icps.append(0)
 
         for dimers in dimer_interaction_discover:
             if temp.recall.get(dimers) != None:
-                temp_recall.append(temp.recall.get(dimers))
-                total_values.append(temp.recall.get(dimers))
+                temp_recall.append( replace_nan(temp.recall.get(dimers)))
+                total_values.append( replace_nan(temp.recall.get(dimers)))
             else:
                 total_values.append(0)
                 temp_recall.append(0)
@@ -905,3 +929,13 @@ def check_path_exists(_PARIWISE_QA_SCRIPT, _TM_SCORE_PATH, _Q_SCORE, _DOCK_Q_PAT
         return True
     else:
         return False
+
+
+def save_mm_score (_pdb_dict,_file_name):
+    mm_string = ""
+    for values in copy.deepcopy(_pdb_dict):
+        temp_string = str(values)+" "+ str(_pdb_dict.get(values).multimer_scoring)+"\n"
+        mm_string = mm_string+temp_string
+
+    write2File(_file_name,mm_string)
+# print(get_dock_q_score(["/home/bdmlab/T1052TS029_1o_chain_AC.pdb","/home/bdmlab/T1052TS275_4o_chain_AC.pdb","/home/bdmlab/tools/DockQ/DockQ.py",]))

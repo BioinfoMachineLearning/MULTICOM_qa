@@ -36,20 +36,21 @@ import eva_utils as eva_util
 #python multi_eva_modified.py ../data/fasta_casp14/casp_capri_fasta/T1032.fasta /home/rsr3gt/programs/Multi_Eva/Multimet_evatest_samples/predictions/T1032_lite/ A2 /home/rsr3gt/programs/Multi_Eva/data/pdbs_casp_alphafold/T1032/ /home/rsr3gt/programs/Multi_Eva/output/Qs_T1032/
 
 
-
-# monomer_sequences_dir = "/home/bdmlab/T1032.fasta"
-# input_dir ="/home/bdmlab/new_tests/pred/"
-# stoichiometry = "A2"
-# predicted_structures = "/home/bdmlab/T1032/"
-# output_dir = "/home/bdmlab/new_tests/"
-# predicted_structures_AF2 = "/home/bdmlab/af_2/"
 #
-monomer_sequences_dir = sys.argv[1]
-input_dir = sys.argv[2]
-stoichiometry = sys.argv[3]
-predicted_structures_AF2 = sys.argv[4]
-CPU_COUNT = sys.argv[5].strip()
-output_dir = sys.argv[6]
+monomer_sequences_dir = "/home/bdmlab/H1097/H1097.fasta"
+input_dir ="/home/bdmlab/H1097/predictions/"
+stoichiometry = "A1B1C1D1E1"
+predicted_structures = "/home/bdmlab/H1097/predictions/"
+output_dir = "/home/bdmlab/H1097/output/"
+CPU_COUNT=10
+predicted_structures_AF2 = "/home/bdmlab/H1097/af2/"
+#
+# monomer_sequences_dir = sys.argv[1]
+# input_dir = sys.argv[2]
+# stoichiometry = sys.argv[3]
+# predicted_structures_AF2 = sys.argv[4]
+# CPU_COUNT = sys.argv[5].strip()
+# output_dir = sys.argv[6]
 
 if os.path.isfile(monomer_sequences_dir):
     print(str(monomer_sequences_dir) + " Found")
@@ -136,18 +137,23 @@ for pdb in predicted_pdb_files:
     pdb_profile_dict[pdb] = temp_predicted_pdb_profile
 print(" Ended seperating of Chains")
 print("Multimer scoring started")
-for pdb_1 in predicted_pdb_files:
-    # print(pdb_1)
-    temp_MM_score_command = []
-    mm_valie = 0
-    for pdb_2 in predicted_pdb_files:
-        if pdb_1 != pdb_2:
-            # mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
-            temp_MM_score_command.append([input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN])
-    mm_valie =  eva_utils.get_MM_score_parallel_submit(temp_MM_score_command,CPU_COUNT)
-    print(mm_valie)
-    # print(str(np.average(temp_MM_score)))
-    pdb_profile_dict.get(pdb_1).multimer_scoring =mm_valie
+multimer_score_file = score_dir+"multimer_score.txt"
+if not os.path.exists(multimer_score_file):
+    for pdb_1 in predicted_pdb_files:
+        # print(pdb_1)
+        temp_MM_score_command = []
+        mm_valie = 0
+        for pdb_2 in predicted_pdb_files:
+            if pdb_1 != pdb_2:
+                # mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
+                temp_MM_score_command.append([input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN])
+        mm_valie =  eva_utils.get_MM_score_parallel_submit(temp_MM_score_command,CPU_COUNT)
+        print(mm_valie)
+        # print(str(np.average(temp_MM_score)))
+        pdb_profile_dict.get(pdb_1).multimer_scoring =mm_valie
+
+    eva_utils.save_mm_score(pdb_profile_dict,multimer_score_file)
+
 print("Multimer scoring Done")
 print("Mapping chains to clusters")
 #######chain cluster mapper
@@ -190,10 +196,14 @@ for chain_value in fasta_stoic_dict:
     # print(predicted_monomer_dir + "/**/*"+"_chain_"+str(chain_value))
     all_monomer_chained_files = glob.glob(predicted_monomer_dir + "/**/*" + "_chain_" + str(chain_value) + ".pdb",
                                           recursive=True)
-    cmd = "perl " + PARIWISE_QA_SCRIPT + " " + temp_chain_dir + " " + fasta_dir + "sequence_" + str(
-        chain_value) + "_A.fasta" + " " + Q_SCORE + " " + TM_SCORE_PATH + " " + chain_value + " " + monomer_score_dir
-    print(cmd)
-    os.system(cmd)
+    monomer_score_file =  monomer_score_dir+str(chain_value)+".tm"
+    if not os.path.exists(monomer_score_file):
+        cmd = "perl " + PARIWISE_QA_SCRIPT + " " + temp_chain_dir + " " + fasta_dir + "sequence_" + str(
+            chain_value) + "_A.fasta" + " " + Q_SCORE + " " + TM_SCORE_PATH + " " + chain_value + " " + monomer_score_dir
+        print(cmd)
+        os.system(cmd)
+    else:
+        print(str(monomer_score_file)+" already exists")
 print("Monomer scoring started")
 #################### MONOMER SCORING PART #################################
 end_time_start = time.perf_counter()
@@ -466,6 +476,17 @@ for monomers in fasta_stoic_dict:
     monomer_score_file = monomer_score_dir + "/" + str(monomers) + ".tm"
     monomer_score_dict[monomers] = eva_util.read_monomer_score(_path=monomer_score_file)
 # print("FINAL SCORE  CALULCATOR")
+mm_score_dict = {}
+if os.path.exists(multimer_score_file):
+    mm_score_dict = eva_util.read_mm_score(_path=multimer_score_file)
+
+for values in mm_score_dict:
+    temp_pdb_profile = pdb_profile_dict.get(values)
+    if mm_score_dict.get(values) != None:
+        temp_pdb_profile.multimer_scoring = mm_score_dict.get(values)
+
+    else:
+        temp_pdb_profile.multimer_scoring = 0
 
 
 for pdb_values in pdb_profile_dict:
