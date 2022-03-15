@@ -24,7 +24,7 @@ proteinNames = []  # initializing array
 # reads all the folder in a directory
 proteinNames =specific_filename_reader(input_dir,"")
 value = []
-DOCK_Q_PATH = "/home/bdmlab/Documents/DockQ/DockQ.py"
+DOCK_Q_PATH = "/home/bdmlab/tools/DockQ/DockQ.py"
 
 def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
                      _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb"):
