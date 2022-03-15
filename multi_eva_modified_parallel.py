@@ -10,6 +10,7 @@ import time
 import config as config_path
 import eva_utils
 from eva_utils import specific_filename_reader
+# from pdb_cleaning import pdb_filtering
 
 is_monomer_scoring_done = False
 is_dimer_scoring_done = False
@@ -23,6 +24,7 @@ total_time = time.perf_counter()
 pdb_profile_dict = {}
 eva_utils.check_path_exists(PARIWISE_QA_SCRIPT, TM_SCORE_PATH, Q_SCORE, DOCK_Q_PATH, MM_ALIGN, GLINTER_DIR)
 import eva_utils as eva_util
+import pdb_cleaning as pdb_c
 
 
 
@@ -37,13 +39,13 @@ import eva_utils as eva_util
 
 
 #
-# monomer_sequences_dir = "/home/bdmlab/H1097/H1097.fasta"
-# input_dir ="/home/bdmlab/H1097/predictions/"
-# stoichiometry = "A1B1C1D1E1"
-# predicted_structures = "/home/bdmlab/H1097/predictions/"
-# output_dir = "/home/bdmlab/H1097/output/"
+# monomer_sequences_dir = "/home/bdmlab/H1036/H1036.fasta"
+# input_dir ="/home/bdmlab/H1036/H1036_pred/"
+# stoichiometry = "A3B3C3"
+# predicted_structures = "/home/bdmlab/H1036/H1036_pred/"
+# output_dir = "/home/bdmlab/H1036/output/"
 # CPU_COUNT=10
-# predicted_structures_AF2 = "/home/bdmlab/H1097/af2/"
+# predicted_structures_AF2 = "/home/bdmlab/H1036/H1036_af2/"
 #
 monomer_sequences_dir = sys.argv[1]
 input_dir = sys.argv[2]
@@ -82,6 +84,10 @@ pred_structures = eva_util.specific_filename_reader(predicted_structures_AF2, ""
 predicted_cmap_dir = eva_util.dir_maker(output_dir + "predicted_cmaps/")
 fasta_stoic_dict = eva_util.multi_fasta_reader(_seq_file=monomer_sequences_dir)
 eva_util.save_multi_fasta(fasta_dir, fasta_stoic_dict)
+filtered_input_pdb = eva_util.dir_maker(output_dir + "filter_input_dir/")
+
+pdb_c.pdb_filtering(_input_dir=input_dir,_output_dir=filtered_input_pdb)
+
 warning_file = output_dir+"warning.log"
 for values in pred_structures:
     # get_fasta_from_pdb_array
@@ -98,14 +104,15 @@ for values in pred_structures:
     print(cmd)
 
 stoi_details = eva_util.get_stoichiometry_details(stoichiometry)
-predicted_pdb_files = eva_util.specific_filename_reader(input_dir, "")
+#########
+predicted_pdb_files = eva_util.specific_filename_reader(filtered_input_pdb, "")
 TOTAL_SUBMISSION = len(predicted_pdb_files)
 predicted_monomer_dir = eva_utils.dir_maker(output_dir + "monomer/")
 all_chains_discovered = []
 start = time.perf_counter()
 print("number of pdb is " + str(len(predicted_pdb_files)))
 for monomer in predicted_pdb_files:
-    temp_monomer_name = input_dir + monomer
+    temp_monomer_name = filtered_input_pdb + monomer
     for values in eva_util.monomer_pdb_filtering(_pdb=temp_monomer_name, _dir=predicted_monomer_dir):
         all_chains_discovered.append(values)
 
@@ -146,7 +153,7 @@ if not os.path.exists(multimer_score_file):
         for pdb_2 in predicted_pdb_files:
             if pdb_1 != pdb_2:
                 # mm_valie = eva_util.get_MM_score(input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN)
-                temp_MM_score_command.append([input_dir + "/" + pdb_1, input_dir + "/" + pdb_2, MM_ALIGN])
+                temp_MM_score_command.append([filtered_input_pdb + "/" + pdb_1, filtered_input_pdb + "/" + pdb_2, MM_ALIGN])
         mm_valie =  eva_utils.get_MM_score_parallel_submit(temp_MM_score_command,CPU_COUNT)
         print(mm_valie)
         # print(str(np.average(temp_MM_score)))
