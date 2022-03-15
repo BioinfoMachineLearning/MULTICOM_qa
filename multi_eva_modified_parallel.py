@@ -39,20 +39,20 @@ import pdb_cleaning as pdb_c
 
 
 #
-monomer_sequences_dir = "/home/bdmlab/H1036/H1036.fasta"
-input_dir ="/home/bdmlab/H1036/H1036_pred/"
-stoichiometry = "A3B3C3"
-predicted_structures = "/home/bdmlab/H1036/H1036_pred/"
-output_dir = "/home/bdmlab/H1036/output/"
-CPU_COUNT=10
-predicted_structures_AF2 = "/home/bdmlab/H1036/H1036_af2/"
+# monomer_sequences_dir = "/home/bdmlab/H1036/H1036.fasta"
+# input_dir ="/home/bdmlab/H1036/H1036_pred/"
+# stoichiometry = "A3B3C3"
+# predicted_structures = "/home/bdmlab/H1036/H1036_pred/"
+# output_dir = "/home/bdmlab/H1036/output/"
+# CPU_COUNT=10
+# predicted_structures_AF2 = "/home/bdmlab/H1036/H1036_af2/"
 #
-# monomer_sequences_dir = sys.argv[1]
-# input_dir = sys.argv[2]
-# stoichiometry = sys.argv[3]
-# predicted_structures_AF2 = sys.argv[4]
-# CPU_COUNT = sys.argv[5].strip()
-# output_dir = sys.argv[6]
+monomer_sequences_dir = sys.argv[1]
+input_dir = sys.argv[2]
+stoichiometry = sys.argv[3]
+predicted_structures_AF2 = sys.argv[4]
+CPU_COUNT = sys.argv[5].strip()
+output_dir = sys.argv[6]
 
 if os.path.isfile(monomer_sequences_dir):
     print(str(monomer_sequences_dir) + " Found")
