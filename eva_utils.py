@@ -696,7 +696,8 @@ def read_monomer_score(_path="/home/bdmlab/multi_eva_test/T1038_LITE/score/monom
     if file.mode == 'r':
         output_array = file.read().strip().splitlines()
         file.close()
-    for values in output_array[4:len(output_array) - 1]:
+    # for values in output_array[4:len(output_array) - 1]:
+    for values in output_array:
         name = values.split(" ")[0].replace("_chain_" + str(chain_name) + ".pdb", "")
         out_dict[name] = float(values.split(" ")[1].strip())
     return out_dict
@@ -938,4 +939,32 @@ def save_mm_score (_pdb_dict,_file_name):
         mm_string = mm_string+temp_string
 
     write2File(_file_name,mm_string)
-# print(get_dock_q_score(["/home/bdmlab/T1052TS029_1o_chain_AC.pdb","/home/bdmlab/T1052TS275_4o_chain_AC.pdb","/home/bdmlab/tools/DockQ/DockQ.py",]))
+
+def get_TM_score(_array):
+    TM_Score_PATH =_array[2]
+    _true= _array[0]
+    _pred = _array[1]
+    # contents = subprocess.check_output([MM_ALIGN_PATH, _true, _current])
+    try:
+        contents = subprocess.check_output([TM_Score_PATH, _pred,_true])
+        for item in contents.decode("utf-8").split("\n"):
+            if "TM-score    =" in item:
+                tm_score_value  = item.replace("TM-score    =", "").strip().split(" ")[0]
+                return float(tm_score_value)
+    except:
+        return 0
+def get_tm_score_parallel_submit(_array,_CPU_COUNT):
+    all_value = []
+    worker = int(_CPU_COUNT)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
+        result_futures = list(map(lambda x: executor.submit(get_TM_score, x), _array))
+        for future in concurrent.futures.as_completed(result_futures):
+            try:
+                all_value.append(future.result())
+            except Exception as e:
+                print('e is', e, type(e))
+                all_value.append(0)
+
+    return np.average(all_value)
+
+# get_TM_score(["/home/bdmlab/H1036/output/monomer_chains/sequence_0/H1036TS014_1_chain_A.pdb","/home/bdmlab/H1036/output/monomer_chains/sequence_0/H1036TS018_1_chain_C.pdb","/home/bdmlab/tools/TMscore"])

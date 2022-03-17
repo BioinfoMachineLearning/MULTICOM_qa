@@ -14,9 +14,9 @@ def pdb_filtering(_input_dir,_output_dir):
         temp_pdb = input_dir + values
 
         temp_fasta_values = eva_utils.contents_to_info(eva_utils.read_pdb(temp_pdb))
-        print(len(temp_fasta_values))
+        # print(len(temp_fasta_values))
         CA_first_chain = list(filter(lambda x: (x.atom_name == "CA"), copy.deepcopy(temp_fasta_values)))
-        print(len(CA_first_chain))
+        # print(len(CA_first_chain))
 
         str_pdb = eva_utils.pdb_from_array(_filename=output_dir + values, _pdb=CA_first_chain)
 # input_dir = "/home/bdmlab/H1036/H1036_pred/"

@@ -109,7 +109,7 @@ predicted_pdb_files = eva_util.specific_filename_reader(filtered_input_pdb, "")
 TOTAL_SUBMISSION = len(predicted_pdb_files)
 predicted_monomer_dir = eva_utils.dir_maker(output_dir + "monomer/")
 all_chains_discovered = []
-start = time.perf_counter()
+
 print("number of pdb is " + str(len(predicted_pdb_files)))
 for monomer in predicted_pdb_files:
     temp_monomer_name = filtered_input_pdb + monomer
@@ -188,7 +188,6 @@ for true_squence in fasta_stoic_dict:
     eva_util.dir_maker(current_dir_name)
     print(true_squence)
     for _pdb in pdb_profile_dict:
-        print(_pdb)
         temp_pdb = pdb_profile_dict.get(_pdb).cluster_chain.get(true_squence)
         if temp_pdb != None:
             for chains in temp_pdb:
@@ -198,19 +197,34 @@ for true_squence in fasta_stoic_dict:
         else:
             eva_util.added_warning_logs(_file=warning_file,_msg="Monomer division "+ str(_pdb)+" sequence "+str(true_squence)+"\n")
 ##################### MONOMER SCORING PART #################################
+start = time.perf_counter()
 for chain_value in fasta_stoic_dict:
     temp_chain_dir = predicted_monomer_chains_dir + "sequence_" + str(chain_value) + "/"
     # print(predicted_monomer_dir + "/**/*"+"_chain_"+str(chain_value))
-    all_monomer_chained_files = glob.glob(predicted_monomer_dir + "/**/*" + "_chain_" + str(chain_value) + ".pdb",
-                                          recursive=True)
+    # all_monomer_chained_files = glob.glob(predicted_monomer_dir + "/**/*" + "_chain_" + str(chain_value) + ".pdb",
+    #                                       recursive=True)
+    all_monomer_chained_files = glob.glob(predicted_monomer_chains_dir + "sequence_" + str(chain_value) + "/**.pdb",    recursive=True)
     monomer_score_file =  monomer_score_dir+str(chain_value)+".tm"
     if not os.path.exists(monomer_score_file):
-        cmd = "perl " + PARIWISE_QA_SCRIPT + " " + temp_chain_dir + " " + fasta_dir + "sequence_" + str(
-            chain_value) + "_A.fasta" + " " + Q_SCORE + " " + TM_SCORE_PATH + " " + chain_value + " " + monomer_score_dir
-        print(cmd)
-        os.system(cmd)
-    else:
-        print(str(monomer_score_file)+" already exists")
+        temp_string = ""
+        for value_1 in all_monomer_chained_files:
+            temp_array_monomer = []
+            for value_2 in all_monomer_chained_files:
+                if value_1 != value_2:
+                    temp_array_monomer.append([value_1,value_2,TM_SCORE_PATH])
+            temp_monomer_score = eva_utils.get_tm_score_parallel_submit(_array=temp_array_monomer, _CPU_COUNT=CPU_COUNT)
+            temp_string= temp_string+os.path.basename(value_1).split(".")[0]+ " "+str(temp_monomer_score)+"\n"
+
+
+        temp_monomer_score_file = monomer_score_dir + "/" + str(chain_value) + ".tm"
+        eva_utils.write2File(_filename=temp_monomer_score_file,_cont=temp_string)
+    # if not os.path.exists(monomer_score_file):
+    #     cmd = "perl " + PARIWISE_QA_SCRIPT + " " + temp_chain_dir + " " + fasta_dir + "sequence_" + str(
+    #         chain_value) + "_A.fasta" + " " + Q_SCORE + " " + TM_SCORE_PATH + " " + chain_value + " " + monomer_score_dir
+    #     print(cmd)
+    #     os.system(cmd)
+    # else:
+    #     print(str(monomer_score_file)+" already exists")
 print("Monomer scoring started")
 #################### MONOMER SCORING PART #################################
 end_time_start = time.perf_counter()
