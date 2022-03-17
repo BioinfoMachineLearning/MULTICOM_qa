@@ -39,20 +39,20 @@ import pdb_cleaning as pdb_c
 
 
 #
-# monomer_sequences_dir = "/home/bdmlab/H1036/H1036.fasta"
-# input_dir ="/home/bdmlab/H1036/H1036_pred/"
-# stoichiometry = "A3B3C3"
-# predicted_structures = "/home/bdmlab/H1036/H1036_pred/"
-# output_dir = "/home/bdmlab/H1036/output/"
-# CPU_COUNT=10
-# predicted_structures_AF2 = "/home/bdmlab/H1036/H1036_af2/"
+monomer_sequences_dir = "/home/bdmlab/H1036/H1036.fasta"
+input_dir ="/home/bdmlab/H1036/H1036_pred/"
+stoichiometry = "A3B3C3"
+predicted_structures = "/home/bdmlab/H1036/H1036_pred/"
+output_dir = "/home/bdmlab/H1036/output/"
+CPU_COUNT=10
+predicted_structures_AF2 = "/home/bdmlab/H1036/H1036_af2/"
 #
-monomer_sequences_dir = sys.argv[1]
-input_dir = sys.argv[2]
-stoichiometry = sys.argv[3]
-predicted_structures_AF2 = sys.argv[4]
-CPU_COUNT = sys.argv[5].strip()
-output_dir = sys.argv[6]
+# monomer_sequences_dir = sys.argv[1]
+# input_dir = sys.argv[2]
+# stoichiometry = sys.argv[3]
+# predicted_structures_AF2 = sys.argv[4]
+# CPU_COUNT = sys.argv[5].strip()
+# output_dir = sys.argv[6]
 
 if os.path.isfile(monomer_sequences_dir):
     print(str(monomer_sequences_dir) + " Found")
@@ -205,7 +205,7 @@ for chain_value in fasta_stoic_dict:
     #                                       recursive=True)
     all_monomer_chained_files = glob.glob(predicted_monomer_chains_dir + "sequence_" + str(chain_value) + "/**.pdb",    recursive=True)
     monomer_score_file =  monomer_score_dir+str(chain_value)+".tm"
-    if os.path.exists(monomer_score_file):
+    if not os.path.exists(monomer_score_file):
         temp_string = ""
         for value_1 in all_monomer_chained_files:
             temp_array_monomer = []
