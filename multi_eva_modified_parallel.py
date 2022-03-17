@@ -4,7 +4,7 @@ import itertools
 import os
 # from config import PARIWISE_QA_SCRIPT,Q_SCORE,TM_SCORE_PATH
 import sys
-
+#print("test")
 import numpy as np
 import time
 import config as config_path
