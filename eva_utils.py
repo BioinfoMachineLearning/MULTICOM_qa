@@ -121,6 +121,9 @@ class predicted_pdb_profile:
     ds_scores = {}
     ms_scores = {}
     icps_scores = {}
+    icps_rank =0
+    mm_align_rank =0
+    final_rank=0
     recall = {}
     cluster_chain = {}
     chain_cluster = {}
@@ -780,6 +783,22 @@ def print_final_data(_file_name, _file_data, _chain_data):
     report_individual_target(_header_row=head_row, _file_name=_file_name, _data_array=data_row)
 
 
+def get_header_string_lite(_stoic, _dimer):
+    head_string = ["Name"]
+
+    for _dimers in _dimer:
+        head_string.append("ICPS_" + str(_dimers))
+
+
+    head_string.append("average_ICPS")
+
+    head_string.append("average_MMS")
+    head_string.append("Final_score")
+    head_string.append("ICPS_Rank")
+    head_string.append("MM_Rank")
+    head_string.append("Final_Rank")
+    return head_string
+
 def get_header_string(_stoic, _dimer):
     head_string = ["Name"]
     for monomer in _stoic:
@@ -800,6 +819,67 @@ def get_header_string(_stoic, _dimer):
     head_string.append("average_MMS")
     head_string.append("Final_score")
     return head_string
+
+
+def print_final_data_new_lite(_file_name, _file_data, _chain_data, _dimer_data):
+    _data_array = []
+    dimer_interaction_discover = copy.deepcopy(_dimer_data)
+    file_data = copy.deepcopy(_file_data)
+    data_row = []
+
+    # icps_scores = {}
+    # icps_rank = {}
+    # mm_align_rank = {}
+    # final_rank = {}
+    # recall = {}
+    for values in file_data:
+        temp = file_data.get(values)
+        temp_icps = []
+        total_values = []
+
+        for dimers in dimer_interaction_discover:
+            if temp.icps_scores.get(dimers) != None:
+                temp_icps.append( replace_nan(temp.icps_scores.get(dimers)))
+                total_values.append( replace_nan(temp.icps_scores.get(dimers)))
+            else:
+                total_values.append(0)
+                temp_icps.append(0)
+
+        total_values.append(np.average(temp_icps))
+        total_values.append(temp.multimer_scoring)
+        final_score = np.average( [ 0.4* np.average(temp_icps),  0.6 *   temp.multimer_scoring])
+        total_values.append(final_score)
+        data_row.append([values] + total_values)
+    #icps -- >sorted(data_row, key=lambda x: x[-3], reverse=True)
+    icps_counter = 1
+    temp_copy = copy.deepcopy(data_row)
+    for ic_values in sorted(temp_copy, key=lambda x: x[-3], reverse=True):
+        file_data.get(ic_values[0]).icps_rank =icps_counter
+        icps_counter = icps_counter +1
+    temp_copy = copy.deepcopy(data_row)
+    mm_counter = 1
+    for   mm_values in sorted(temp_copy, key=lambda x: x[-2], reverse=True):
+        file_data.get(mm_values[0]).mm_align_rank = mm_counter
+        mm_counter =   mm_counter + 1
+    temp_copy = copy.deepcopy(data_row)
+    for _values in temp_copy:
+        temp = file_data.get(_values[0])
+        temp.final_rank = float(int(temp.mm_align_rank)+int(temp.icps_rank))/2
+    rank_list = []
+    for final_values in data_row:
+        temp = file_data.get(final_values[0])
+        final_values.append(temp.icps_rank)
+        final_values.append(temp.mm_align_rank)
+        final_values.append(temp.final_rank)
+
+        #mmalign -->sorted(data_row, key=lambda x: x[-2], reverse=True)
+    # data_row = sorted(data_row, key=lambda x: x[-3], reverse=True)
+    # true_top_1_name = sorted(file_data.items(), key=lambda x: x[1].icps_scores, reverse=True)[0]
+    # true_top_1_score = true_top_1_name[1].icps_scores
+
+    head_row = get_header_string_lite(_chain_data, _dimer_data)
+    # head_row = ['Name', 'Monomer_score', 'Dimer_score', 'ICP_score', 'recall_score', 'final_score']
+    report_individual_target(_header_row=head_row, _file_name=_file_name, _data_array=data_row)
 
 
 def print_final_data_new(_file_name, _file_data, _chain_data, _dimer_data):
