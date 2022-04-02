@@ -25,4 +25,4 @@ Change the path of the tools/softwares accroding to your system in the config fi
 Sometimes Glinter's env doesn't activate properly. So it is better to activate it before runnning and also if you encounter any error regarding "MKL_SERVICE" then use the command from below before running.
 
 export MKL_SERVICE_FORCE_INTEL=1
-
+(READNE NEEDS UPDATES)
