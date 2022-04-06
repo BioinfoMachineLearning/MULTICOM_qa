@@ -1,6 +1,6 @@
 # perl pairwise_model_eva.pl /home/rajroy/multi_eva_test/monomer_chains/A/ /home/rajroy/multi_eva_test/Multimet_evatest_samples/casp_fasta/H1036A.fasta /home/rajroy/pairwiseQA/q_score /home/rajroy/Downloads/tools/TMscore A /home/rajroy/q_A/
 class config:
-    DEVICE = "Lily"
+    DEVICE = "Current"
     PARIWISE_QA_SCRIPT = ""
     Q_SCORE = ""
     TM_SCORE_PATH = ""
@@ -17,7 +17,7 @@ class config:
         MM_ALIGN_PATH = "/home/bdmlab/tools/MMalign"
         GLINTER_DIR = "/home/bdmlab/anaconda3/envs/multi_eva/"
         DOCK_Q_PATH = "/home/bdmlab/tools/DockQ/DockQ.py"
-    elif "Lily" == DEVICE:
+    elif "Current" == DEVICE:
         PARIWISE_QA_SCRIPT = "/home/rsr3gt/programs/tools/pairwise_model_eva.pl"
         Q_SCORE = "/home/rsr3gt/programs/tools/pairwiseQA/q_score"
         TM_SCORE_PATH = "/home/rsr3gt/programs/tools/TMscore"
