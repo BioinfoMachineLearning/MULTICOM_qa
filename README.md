@@ -19,8 +19,17 @@ Note the fasta file is expected in CAPRI format check the dir examples for clari
 6. Biopython 
 7. Futures
   
-## First Time Setup
-Change the path of the tools/softwares accroding to your system in the config file.
+## Installation
+1. Install the required softwares.
+2. Open the ./config file and edit the path of the following variablse under the "Current section" with the appropiate path:
+    1. PARIWISE_QA_SCRIPT = "path of the pairwise qa script"
+    2. Q_SCORE = "path of the qscore script"
+    3. TM_SCORE_PATH = "path of the tmscore"
+    4. MM_ALIGN_PATH = "path of the MMalign tools"
+    5. GLINTER_DIR = "path of the installed glinter directory"
+    6. DOCK_Q_PATH = "path of the DOCKQ.py file"
+##Current Version
+    To run the current and faster version of MultimerEva run the "multi_eva_modified_parallel_lite.py"
 
 ## Caution
 Sometimes Glinter's env doesn't activate properly. So it is better to activate it before runnning and also if you encounter any error regarding "MKL_SERVICE" then use the command from below before running.
