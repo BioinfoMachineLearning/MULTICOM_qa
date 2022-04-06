@@ -1,4 +1,5 @@
 import csv
+import os
 import subprocess
 
 import numpy as np
@@ -23,23 +24,32 @@ def get_MM_score(_true, _current, _MM_ALIGN):
 
         if "TM-score=" in item:
             tm_list.append(float(item.strip().split(" ")[1].strip()))
-
+    print(tm_list)
     return np.min(tm_list)
 
+def specific_filename_reader(_input_dir, _extension):
+    file_names = []
+    for root, directories, files in os.walk(_input_dir):
+        for file in files:
+            if _extension in file:
+                file = file.split(".")[0]
+                if not file in file_names:
+                    file_names.append(file)
+    return file_names
 
 
-output_dir = "/home/bdmlab/mm_align_output/"
+output_dir = "/home/bdmlab/MM_Eva/DG/dock_mmalign_output/"
 MM_ALIGN_PATH = "/home/bdmlab/tools/MMalign"
-list_of_file ="/home/bdmlab/predictions_cleaned/casp_14_oligomers.txt"
+list_of_file ="/home/bdmlab/left_over.txt"
 
 list_file = file_reader(list_of_file)
 
 for Title in list_file:
     print(Title)
-    true_dir = "/home/bdmlab/pdbs_cleaned/"
-    temp_input_dir = "/home/bdmlab/predictions_cleaned/"+str(Title)+"/"
-    true_pdb = true_dir + str(Title) + "/" + str(Title) + ".pdb"
-    temp_pdb_list = eva_utils.specific_filename_reader(_input_dir=temp_input_dir, _extension="")
+    true_dir = "/home/bdmlab/MM_Eva/DG/DockG_native/"
+    temp_input_dir = "/home/bdmlab/MM_Eva/DG/tidy_pdb_2/"+str(Title)+"/"
+    true_pdb = true_dir + "/" + str(Title) + ".pdb"
+    temp_pdb_list = specific_filename_reader(_input_dir=temp_input_dir, _extension="")
     score_array = []
     for values in temp_pdb_list:
         temp_pdb = temp_input_dir + str(values)
