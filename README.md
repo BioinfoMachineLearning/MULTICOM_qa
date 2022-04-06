@@ -28,8 +28,9 @@ Note the fasta file is expected in CAPRI format check the dir examples for clari
     4. MM_ALIGN_PATH = "path of the MMalign tools"
     5. GLINTER_DIR = "path of the installed glinter directory"
     6. DOCK_Q_PATH = "path of the DOCKQ.py file"
+   
 ##Current Version
-    To run the current and faster version of MultimerEva run the "multi_eva_modified_parallel_lite.py"
+To run the current and faster version of MultimerEva run the "multi_eva_modified_parallel_lite.py"
 
 ## Caution
 Sometimes Glinter's env doesn't activate properly. So it is better to activate it before runnning and also if you encounter any error regarding "MKL_SERVICE" then use the command from below before running.
