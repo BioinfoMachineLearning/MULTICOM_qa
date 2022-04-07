@@ -847,7 +847,7 @@ def print_final_data_new_lite(_file_name, _file_data, _chain_data, _dimer_data):
 
         total_values.append(np.average(temp_icps))
         total_values.append(temp.multimer_scoring)
-        final_score = np.average( [ 0.4* np.average(temp_icps),  0.6 *   temp.multimer_scoring])
+        final_score = 0.4* np.average(temp_icps),  0.6 *   temp.multimer_scoring
         total_values.append(final_score)
         data_row.append([values] + total_values)
     #icps -- >sorted(data_row, key=lambda x: x[-3], reverse=True)
@@ -864,7 +864,7 @@ def print_final_data_new_lite(_file_name, _file_data, _chain_data, _dimer_data):
     temp_copy = copy.deepcopy(data_row)
     for _values in temp_copy:
         temp = file_data.get(_values[0])
-        temp.final_rank = float(int(temp.mm_align_rank)+int(temp.icps_rank))/2
+        temp.final_rank = float(0.6 * int(temp.mm_align_rank)+int(temp.icps_rank)*0.4)
     rank_list = []
     for final_values in data_row:
         temp = file_data.get(final_values[0])
