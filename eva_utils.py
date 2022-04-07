@@ -847,7 +847,7 @@ def print_final_data_new_lite(_file_name, _file_data, _chain_data, _dimer_data):
 
         total_values.append(np.average(temp_icps))
         total_values.append(temp.multimer_scoring)
-        final_score = 0.4* np.average(temp_icps),  0.6 *   temp.multimer_scoring
+        final_score = 0.4* np.average(temp_icps)+  0.6 *   temp.multimer_scoring
         total_values.append(final_score)
         data_row.append([values] + total_values)
     #icps -- >sorted(data_row, key=lambda x: x[-3], reverse=True)
