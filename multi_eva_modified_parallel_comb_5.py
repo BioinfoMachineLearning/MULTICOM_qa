@@ -377,7 +377,7 @@ for _pred_cmap_candidate in valid_dimer_combos:
         second_chain = predicted_monomer_dir_AF2 + "/sequence_" + _pred_cmap_candidate[1] + "_A.pdb"
         expected_cmaps_name = expected_cmaps_name + "/sequence_" + str(_pred_cmap_candidate[0]) + "_A:sequence_" + str(
             _pred_cmap_candidate[1]) + "_A.cmap"
-
+    expected_cmaps_name = expected_cmaps_name.replace("//","/")
     if not os.path.exists(expected_cmaps_name):
         print("expected_cmaps " + str(expected_cmaps_name) + " not found \n")
         print("predicting the interactions \n")
