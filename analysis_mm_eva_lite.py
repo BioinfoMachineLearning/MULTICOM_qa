@@ -100,7 +100,7 @@ for _targets in list_of_file:
     final_top_1_score = final_top_1_name[1].true_mm_score
     loss_final_top_1_score = float(true_top_1_score)-float(final_top_1_score)
     final_results.append(
-        [Title.replace(".csv",""), icps_1_score, mm_align_top_1_score, final_top_1_score,new_rank_top_1_score,
+        [Title.replace(".csv",""), icps_1_score, mm_align_top_1_score, new_rank_top_1_score, final_top_1_score,new_rank_top_1_score,
          true_top_1_score,loss_icps_top_1_score,loss_mm_align_top_1_score,loss_final_top_1_score,loss_new_rank_top_1_score])
 
 # print(final_results)
