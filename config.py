@@ -24,3 +24,4 @@ class config:
         MM_ALIGN_PATH = "/home/rsr3gt/programs/tools/MMalign"
         GLINTER_DIR = "/home/rsr3gt/programs/glinter/"
         DOCK_Q_PATH = "/home/rsr3gt/programs/tools/DockQ/DockQ.py"
+        CDPRED_PATH="/home/multicom4s_tool/CDpred_mm_eva/CDPred/run_CDFold.sh"

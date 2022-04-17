@@ -988,6 +988,36 @@ def glinter_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cm
 
     return
 
+def cdpred_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cmaps_name, _cdpred_dir):
+    CDPRED_DIR = _cdpred_dir
+    name_1_list = os.path.basename(_first_pdb).split(".")[0]
+    name_2_list = os.path.basename(_second_pdb).split(".")[0]
+    _name_full =  str(name_1_list) + "_" + str(name_2_list)
+#    os.system("cd " + GLINTER_DIR)
+    if _is_homodimer == True:
+        #python lib/Model_predict.py -n T1084A_T1084B -p ./example/T1084A_T1084B.pdb -a ./example/T1084A_T1084B.a3m -m homodimer -o ./output/T1084A_T1084B/
+        cmd = "sh "+ CDPRED_DIR + " -n "+ _name_full+ " -p "+str(_first_pdb) +" -m homodimer -o "+ str(_out_dir) + "/" + str(_name_full)
+        print(os.system( cmd))
+    else:
+        #python lib/Model_predict.py -n H1017A_H1017B -p ./example/H1017A.pdb ./example/H1017B.pdb -a ./example/H1017A_H1017B.a3m -m heterodimer -o ./output/H1017A_H1017B/
+        cmd = "sh "+ CDPRED_DIR + " -n "+ _name_full+ " -p '"+str(_first_pdb)+" "+str(_second_pdb) +"' -m heterodimer -o "+ str(_out_dir) + "/" + str(_name_full)
+
+    cmap_file = _out_dir + _name_full + "/predmap/"+_name_full+".htxt"
+
+    cmd = cmd.replace("//","/")
+    cmap_file= cmap_file.replace("//","/")
+    print(cmd)
+    print(cmap_file)
+    if os.path.exists(cmap_file):
+        content = np.load(cmap_file, allow_pickle=True)
+        _out_dir = _out_dir.replace("//", "/")
+        dest_file = _out_dir.replace("extras/", "") +  str(name_1_list) + ":" + str(name_2_list) + ".cmap"
+        print(dest_file)
+        np.savetxt(expected_cmaps_name, content)
+
+    return
+
+
 
 def check_single_exists(_file):
     if os.path.exists(_file):
