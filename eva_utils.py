@@ -1001,6 +1001,7 @@ def cdpred_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cma
     else:
         #python lib/Model_predict.py -n H1017A_H1017B -p ./example/H1017A.pdb ./example/H1017B.pdb -a ./example/H1017A_H1017B.a3m -m heterodimer -o ./output/H1017A_H1017B/
         cmd = "sh "+ CDPRED_DIR + " -n "+ _name_full+ " -p '"+str(_first_pdb)+" "+str(_second_pdb) +"' -m heterodimer -o "+ str(_out_dir) + "/" + str(_name_full)
+        print(os.system(cmd))
 
     cmap_file = _out_dir + _name_full + "/predmap/"+_name_full+".htxt"
 
@@ -1009,7 +1010,7 @@ def cdpred_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cma
     print(cmd)
     print(cmap_file)
     if os.path.exists(cmap_file):
-        content = np.load(cmap_file, allow_pickle=True)
+        content = np.loadtxt(cmap_file)
         _out_dir = _out_dir.replace("//", "/")
         dest_file = _out_dir.replace("extras/", "") +  str(name_1_list) + ":" + str(name_2_list) + ".cmap"
         print(dest_file)
