@@ -1,6 +1,6 @@
 # perl pairwise_model_eva.pl /home/rajroy/multi_eva_test/monomer_chains/A/ /home/rajroy/multi_eva_test/Multimet_evatest_samples/casp_fasta/H1036A.fasta /home/rajroy/pairwiseQA/q_score /home/rajroy/Downloads/tools/TMscore A /home/rajroy/q_A/
 class config:
-    DEVICE = "Current"
+    DEVICE = "bml"
     PARIWISE_QA_SCRIPT = ""
     Q_SCORE = ""
     TM_SCORE_PATH = ""
@@ -17,6 +17,7 @@ class config:
         MM_ALIGN_PATH = "/home/bdmlab/tools/MMalign"
         GLINTER_DIR = "/home/bdmlab/anaconda3/envs/multi_eva/"
         DOCK_Q_PATH = "/home/bdmlab/tools/DockQ/DockQ.py"
+        CDPRED_PATH = "/home/bdmlab/tools/DockQ/DockQ.py"
     elif "Current" == DEVICE:
         PARIWISE_QA_SCRIPT = "/home/multicom4s_tool/pairwise_model_eva.pl"
         Q_SCORE = "/home/multicom4s_tool/pairwiseQA/q_score"
@@ -25,3 +26,11 @@ class config:
         GLINTER_DIR = "/home/rsr3gt/programs/glinter/"
         DOCK_Q_PATH = "/home/multicom4s_tool/DockQ/DockQ.py"
         CDPRED_PATH="/home/multicom4s_tool/CDpred_mm_eva/CDPred/run_CDFold.sh"
+    elif "bml" == DEVICE:
+        PARIWISE_QA_SCRIPT = "/bml/bml_casp15/casp15_qa_multimer_eva/external_tools/pairwise_model_eva.pl"
+        Q_SCORE = "/bml/bml_casp15/casp15_qa_multimer_eva/external_tools/pairwiseQA/q_score"
+        TM_SCORE_PATH = "/bml/bml_casp15/casp15_qa_multimer_eva/external_tools/TMscore"
+        MM_ALIGN_PATH = "/bml/bml_casp15/casp15_qa_multimer_eva/external_tools/MMalign"
+        GLINTER_DIR = "/home/multicom4s_tool/CDpred_mm_eva/CDPred/run_CDFold.sh"
+        DOCK_Q_PATH = "/bml/bml_casp15/casp15_qa_multimer_eva/external_tools/DockQ/DockQ.py"
+        CDPRED_PATH="/bml/bml_casp15/casp15_qa_multimer_eva/CDPred/run_CDFold.sh"

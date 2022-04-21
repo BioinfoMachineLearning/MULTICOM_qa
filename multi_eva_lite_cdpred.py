@@ -29,13 +29,13 @@ import pdb_cleaning as pdb_c
 
 
 #
-# monomer_sequences_dir = "/home/bdmlab/H1036/H1036.fasta"
-# input_dir ="/home/bdmlab/H1036/H1036_pred/"
+# monomer_sequences_dir = "/home/bdmlab/MM_Eva/casp14/H1036/H1036.fasta"
+# input_dir ="/home/bdmlab/MM_Eva/casp14/H1036/H1036_pred/"
 # stoichiometry = "A3B3C3"
-# predicted_structures = "/home/bdmlab/H1036/H1036_pred/"
-# output_dir = "/home/bdmlab/H1036/output_new/"
+# predicted_structures = "/home/bdmlab/MM_Eva/casp14/H1036/H1036_pred/"
+# output_dir = "/home/bdmlab/H1036/MM_Eva/casp14/output_new/"
 # CPU_COUNT=10
-# predicted_structures_AF2 = "/home/bdmlab/H1036/H1036_af2/"
+# predicted_structures_AF2 = "/home/bdmlab/MM_Eva/casp14/H1036/H1036_af2/"
 #
 monomer_sequences_dir = sys.argv[1]
 input_dir = sys.argv[2]

@@ -60,6 +60,7 @@ def space_returner(_input):
         i = i + 1
     return space
 
+
 def added_warning_logs(_file, _msg):
     # Open a file with access mode 'a'
     file_object = open(_file, 'a')
@@ -68,6 +69,8 @@ def added_warning_logs(_file, _msg):
     # Close the file
     file_object.close()
     return
+
+
 def find_lowest_gap(_target, _hit):
     aln_val = pairwise2.align.globalms(_target, _hit, 5, -4, -1, -0.1)
     chain_target = list(aln_val[0][0])
@@ -75,7 +78,7 @@ def find_lowest_gap(_target, _hit):
     # print(chain_target)
     # print(chain_hit)
 
-    return chain_hit.count('-')/len(chain_hit)
+    return chain_hit.count('-') / len(chain_hit)
 
 
 def convert_to_pdb(_pdb, _name):
@@ -121,9 +124,9 @@ class predicted_pdb_profile:
     ds_scores = {}
     ms_scores = {}
     icps_scores = {}
-    icps_rank =0
-    mm_align_rank =0
-    final_rank=0
+    icps_rank = 0
+    mm_align_rank = 0
+    final_rank = 0
     recall = {}
     cluster_chain = {}
     chain_cluster = {}
@@ -346,11 +349,10 @@ def get_MM_score(_arr):
 
         return np.min(tm_list)
     except:
-        return  0.0
+        return 0.0
 
 
-
-def get_MM_score_parallel_submit(_array,_CPU_COUNT):
+def get_MM_score_parallel_submit(_array, _CPU_COUNT):
     all_value = []
     worker = int(_CPU_COUNT)
     with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
@@ -623,7 +625,7 @@ def get_dock_q_score(_inp):
             return 0
 
 
-def get_dock_q_score_parallel_submit(_array,_CPU_COUNT):
+def get_dock_q_score_parallel_submit(_array, _CPU_COUNT):
     all_value = []
     worker = int(_CPU_COUNT)
     with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
@@ -704,6 +706,7 @@ def read_monomer_score(_path="/home/bdmlab/multi_eva_test/T1038_LITE/score/monom
         name = values.split(" ")[0].replace("_chain_" + str(chain_name) + ".pdb", "")
         out_dict[name] = float(values.split(" ")[1].strip())
     return out_dict
+
 
 def read_mm_score(_path="/home/bdmlab/multi_eva_test/T1038_LITE/score/monomer/A.tm"):
     out_dict = {}
@@ -789,7 +792,6 @@ def get_header_string_lite(_stoic, _dimer):
     for _dimers in _dimer:
         head_string.append("ICPS_" + str(_dimers))
 
-
     head_string.append("average_ICPS")
 
     head_string.append("average_MMS")
@@ -798,6 +800,7 @@ def get_header_string_lite(_stoic, _dimer):
     head_string.append("MM_Rank")
     head_string.append("Final_Rank")
     return head_string
+
 
 def get_header_string(_stoic, _dimer):
     head_string = ["Name"]
@@ -821,6 +824,19 @@ def get_header_string(_stoic, _dimer):
     return head_string
 
 
+def get_casp_file(_data, _casp_file):
+    with open(os.path.join(_casp_file.replace(".csv", "_top5.txt")), 'w') as f:
+        f.writelines('PFRMAT QA' + '\n')
+        f.writelines(f'TARGET {os.path.basename(_casp_file).split(".")[0]}' + '\n')
+        f.writelines('AUTHOR MULTICOM_qa' + '\n')
+        f.writelines('METHOD Multimer_eva' + '\n')
+        f.writelines('MODEL 1'+ '\n')
+        f.writelines('QMODE 1'+ '\n')
+        for record in _data:
+            f.writelines(str(record[0]) + " " + str(record[-4])[0:5] + " " + str(record[-6]) [0:5]+ "\n")
+        f.writelines('END')
+
+
 def print_final_data_new_lite(_file_name, _file_data, _chain_data, _dimer_data):
     _data_array = []
     dimer_interaction_discover = copy.deepcopy(_dimer_data)
@@ -839,32 +855,32 @@ def print_final_data_new_lite(_file_name, _file_data, _chain_data, _dimer_data):
 
         for dimers in dimer_interaction_discover:
             if temp.icps_scores.get(dimers) != None:
-                temp_icps.append( replace_nan(temp.icps_scores.get(dimers)))
-                total_values.append( replace_nan(temp.icps_scores.get(dimers)))
+                temp_icps.append(replace_nan(temp.icps_scores.get(dimers)))
+                total_values.append(replace_nan(temp.icps_scores.get(dimers)))
             else:
                 total_values.append(0)
                 temp_icps.append(0)
 
         total_values.append(np.average(temp_icps))
         total_values.append(temp.multimer_scoring)
-        final_score = 0.4* np.average(temp_icps)+  0.6 *   temp.multimer_scoring
+        final_score = 0.4 * np.average(temp_icps) + 0.6 * temp.multimer_scoring
         total_values.append(final_score)
         data_row.append([values] + total_values)
-    #icps -- >sorted(data_row, key=lambda x: x[-3], reverse=True)
+    # icps -- >sorted(data_row, key=lambda x: x[-3], reverse=True)
     icps_counter = 1
     temp_copy = copy.deepcopy(data_row)
     for ic_values in sorted(temp_copy, key=lambda x: x[-3], reverse=True):
-        file_data.get(ic_values[0]).icps_rank =icps_counter
-        icps_counter = icps_counter +1
+        file_data.get(ic_values[0]).icps_rank = icps_counter
+        icps_counter = icps_counter + 1
     temp_copy = copy.deepcopy(data_row)
     mm_counter = 1
-    for   mm_values in sorted(temp_copy, key=lambda x: x[-2], reverse=True):
+    for mm_values in sorted(temp_copy, key=lambda x: x[-2], reverse=True):
         file_data.get(mm_values[0]).mm_align_rank = mm_counter
-        mm_counter =   mm_counter + 1
+        mm_counter = mm_counter + 1
     temp_copy = copy.deepcopy(data_row)
     for _values in temp_copy:
         temp = file_data.get(_values[0])
-        temp.final_rank = float(0.6 * int(temp.mm_align_rank)+int(temp.icps_rank)*0.4)
+        temp.final_rank = float(0.6 * int(temp.mm_align_rank) + int(temp.icps_rank) * 0.4)
     rank_list = []
     for final_values in data_row:
         temp = file_data.get(final_values[0])
@@ -872,7 +888,7 @@ def print_final_data_new_lite(_file_name, _file_data, _chain_data, _dimer_data):
         final_values.append(temp.mm_align_rank)
         final_values.append(temp.final_rank)
 
-        #mmalign -->sorted(data_row, key=lambda x: x[-2], reverse=True)
+        # mmalign -->sorted(data_row, key=lambda x: x[-2], reverse=True)
     # data_row = sorted(data_row, key=lambda x: x[-3], reverse=True)
     # true_top_1_name = sorted(file_data.items(), key=lambda x: x[1].icps_scores, reverse=True)[0]
     # true_top_1_score = true_top_1_name[1].icps_scores
@@ -880,6 +896,8 @@ def print_final_data_new_lite(_file_name, _file_data, _chain_data, _dimer_data):
     head_row = get_header_string_lite(_chain_data, _dimer_data)
     # head_row = ['Name', 'Monomer_score', 'Dimer_score', 'ICP_score', 'recall_score', 'final_score']
     report_individual_target(_header_row=head_row, _file_name=_file_name, _data_array=data_row)
+    top_5_arr = sorted(data_row, key=lambda x: x[-1])
+    get_casp_file(_data=top_5_arr[0:5], _casp_file=_file_name)
 
 
 def print_final_data_new(_file_name, _file_data, _chain_data, _dimer_data):
@@ -899,8 +917,8 @@ def print_final_data_new(_file_name, _file_data, _chain_data, _dimer_data):
         # total_values.append(values)
         for monomers in all_chains_discovered:
             if temp.ms_scores.get(monomers) != None:
-                temp_ms_score.append( replace_nan(float(temp.ms_scores.get(monomers))))
-                total_values.append( replace_nan(float(temp.ms_scores.get(monomers))))
+                temp_ms_score.append(replace_nan(float(temp.ms_scores.get(monomers))))
+                total_values.append(replace_nan(float(temp.ms_scores.get(monomers))))
             else:
                 temp_ms_score.append(0)
                 total_values.append(0)
@@ -909,8 +927,8 @@ def print_final_data_new(_file_name, _file_data, _chain_data, _dimer_data):
 
         for dimers in dimer_interaction_discover:
             if temp.ds_scores.get(dimers) != None:
-                temp_ds_score.append( replace_nan(temp.ds_scores.get(dimers)))
-                total_values.append( replace_nan(float(temp.ds_scores.get(dimers))))
+                temp_ds_score.append(replace_nan(temp.ds_scores.get(dimers)))
+                total_values.append(replace_nan(float(temp.ds_scores.get(dimers))))
             else:
                 total_values.append(0)
                 temp_ds_score.append(0)
@@ -919,16 +937,16 @@ def print_final_data_new(_file_name, _file_data, _chain_data, _dimer_data):
 
         for dimers in dimer_interaction_discover:
             if temp.icps_scores.get(dimers) != None:
-                temp_icps.append( replace_nan(temp.icps_scores.get(dimers)))
-                total_values.append( replace_nan(temp.icps_scores.get(dimers)))
+                temp_icps.append(replace_nan(temp.icps_scores.get(dimers)))
+                total_values.append(replace_nan(temp.icps_scores.get(dimers)))
             else:
                 total_values.append(0)
                 temp_icps.append(0)
 
         for dimers in dimer_interaction_discover:
             if temp.recall.get(dimers) != None:
-                temp_recall.append( replace_nan(temp.recall.get(dimers)))
-                total_values.append( replace_nan(temp.recall.get(dimers)))
+                temp_recall.append(replace_nan(temp.recall.get(dimers)))
+                total_values.append(replace_nan(temp.recall.get(dimers)))
             else:
                 total_values.append(0)
                 temp_recall.append(0)
@@ -959,17 +977,18 @@ def glinter_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cm
     print(envs)
     os.system("export MKL_SERVICE_FORCE_INTEL=1")
     os.system("source " + str(envs))
-#    os.system("cd "+GLINTER_DIR)
-#    os.system("export MKL_SERVICE_FORCE_INTEL=1")
+    #    os.system("cd "+GLINTER_DIR)
+    #    os.system("export MKL_SERVICE_FORCE_INTEL=1")
     name_1_list = os.path.basename(_first_pdb).split(".")[0]
     name_2_list = os.path.basename(_second_pdb).split(".")[0]
-#    os.system("cd " + GLINTER_DIR)
+    #    os.system("cd " + GLINTER_DIR)
     if _is_homodimer == True:
         cmd = GLINTER_DIR + "/scripts/build_homo.sh " + str(_first_pdb) + " " + str(_second_pdb) + " " + str(
             _out_dir) + " " + str(name_2_list)
-        print(os.system( cmd))
+        print(os.system(cmd))
     else:
-        cmd = GLINTER_DIR + "/scripts/build_hetero.sh " + str(_first_pdb.replace("//","/")) + " " + str(_second_pdb.replace("//","/")) + " " + str(_out_dir.replace("//","/"))
+        cmd = GLINTER_DIR + "/scripts/build_hetero.sh " + str(_first_pdb.replace("//", "/")) + " " + str(
+            _second_pdb.replace("//", "/")) + " " + str(_out_dir.replace("//", "/"))
         print(os.system(cmd))
     name = str(name_1_list) + ":" + str(name_2_list)
     cmap_file = _out_dir + name + "/score_mat.pkl"
@@ -988,36 +1007,38 @@ def glinter_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cm
 
     return
 
+
 def cdpred_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cmaps_name, _cdpred_dir):
     CDPRED_DIR = _cdpred_dir
     name_1_list = os.path.basename(_first_pdb).split(".")[0]
     name_2_list = os.path.basename(_second_pdb).split(".")[0]
-    _name_full =  str(name_1_list) + "_" + str(name_2_list)
-#    os.system("cd " + GLINTER_DIR)
+    _name_full = str(name_1_list) + "_" + str(name_2_list)
+    #    os.system("cd " + GLINTER_DIR)
     if _is_homodimer == True:
-        #python lib/Model_predict.py -n T1084A_T1084B -p ./example/T1084A_T1084B.pdb -a ./example/T1084A_T1084B.a3m -m homodimer -o ./output/T1084A_T1084B/
-        cmd = "sh "+ CDPRED_DIR + " -n "+ _name_full+ " -p "+str(_first_pdb) +" -m homodimer -o "+ str(_out_dir) + "/" + str(_name_full)
-        print(os.system( cmd))
+        # python lib/Model_predict.py -n T1084A_T1084B -p ./example/T1084A_T1084B.pdb -a ./example/T1084A_T1084B.a3m -m homodimer -o ./output/T1084A_T1084B/
+        cmd = "sh " + CDPRED_DIR + " -n " + _name_full + " -p " + str(_first_pdb) + " -m homodimer -o " + str(
+            _out_dir) + "/" + str(_name_full)
+        print(os.system(cmd))
     else:
-        #python lib/Model_predict.py -n H1017A_H1017B -p ./example/H1017A.pdb ./example/H1017B.pdb -a ./example/H1017A_H1017B.a3m -m heterodimer -o ./output/H1017A_H1017B/
-        cmd = "sh "+ CDPRED_DIR + " -n "+ _name_full+ " -p '"+str(_first_pdb)+" "+str(_second_pdb) +"' -m heterodimer -o "+ str(_out_dir) + "/" + str(_name_full)
+        # python lib/Model_predict.py -n H1017A_H1017B -p ./example/H1017A.pdb ./example/H1017B.pdb -a ./example/H1017A_H1017B.a3m -m heterodimer -o ./output/H1017A_H1017B/
+        cmd = "sh " + CDPRED_DIR + " -n " + _name_full + " -p '" + str(_first_pdb) + " " + str(
+            _second_pdb) + "' -m heterodimer -o " + str(_out_dir) + "/" + str(_name_full)
         print(os.system(cmd))
 
-    cmap_file = _out_dir + _name_full + "/predmap/"+_name_full+".htxt"
+    cmap_file = _out_dir + _name_full + "/predmap/" + _name_full + ".htxt"
 
-    cmd = cmd.replace("//","/")
-    cmap_file= cmap_file.replace("//","/")
+    cmd = cmd.replace("//", "/")
+    cmap_file = cmap_file.replace("//", "/")
     print(cmd)
     print(cmap_file)
     if os.path.exists(cmap_file):
         content = np.loadtxt(cmap_file)
         _out_dir = _out_dir.replace("//", "/")
-        dest_file = _out_dir.replace("extras/", "") +  str(name_1_list) + ":" + str(name_2_list) + ".cmap"
+        dest_file = _out_dir.replace("extras/", "") + str(name_1_list) + ":" + str(name_2_list) + ".cmap"
         print(dest_file)
         np.savetxt(expected_cmaps_name, content)
 
     return
-
 
 
 def check_single_exists(_file):
@@ -1043,28 +1064,31 @@ def check_path_exists(_PARIWISE_QA_SCRIPT, _TM_SCORE_PATH, _Q_SCORE, _DOCK_Q_PAT
         return False
 
 
-def save_mm_score (_pdb_dict,_file_name):
+def save_mm_score(_pdb_dict, _file_name):
     mm_string = ""
     for values in copy.deepcopy(_pdb_dict):
-        temp_string = str(values)+" "+ str(_pdb_dict.get(values).multimer_scoring)+"\n"
-        mm_string = mm_string+temp_string
+        temp_string = str(values) + " " + str(_pdb_dict.get(values).multimer_scoring) + "\n"
+        mm_string = mm_string + temp_string
 
-    write2File(_file_name,mm_string)
+    write2File(_file_name, mm_string)
+
 
 def get_TM_score(_array):
-    TM_Score_PATH =_array[2]
-    _true= _array[0]
+    TM_Score_PATH = _array[2]
+    _true = _array[0]
     _pred = _array[1]
     # contents = subprocess.check_output([MM_ALIGN_PATH, _true, _current])
     try:
-        contents = subprocess.check_output([TM_Score_PATH, _pred,_true])
+        contents = subprocess.check_output([TM_Score_PATH, _pred, _true])
         for item in contents.decode("utf-8").split("\n"):
             if "TM-score    =" in item:
-                tm_score_value  = item.replace("TM-score    =", "").strip().split(" ")[0]
+                tm_score_value = item.replace("TM-score    =", "").strip().split(" ")[0]
                 return float(tm_score_value)
     except:
         return 0
-def get_tm_score_parallel_submit(_array,_CPU_COUNT):
+
+
+def get_tm_score_parallel_submit(_array, _CPU_COUNT):
     all_value = []
     worker = int(_CPU_COUNT)
     with concurrent.futures.ThreadPoolExecutor(max_workers=worker) as executor:
@@ -1077,5 +1101,3 @@ def get_tm_score_parallel_submit(_array,_CPU_COUNT):
                 all_value.append(0)
 
     return np.average(all_value)
-
-# get_TM_score(["/home/bdmlab/H1036/output/monomer_chains/sequence_0/H1036TS014_1_chain_A.pdb","/home/bdmlab/H1036/output/monomer_chains/sequence_0/H1036TS018_1_chain_C.pdb","/home/bdmlab/tools/TMscore"])
