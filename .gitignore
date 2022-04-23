@@ -22,3 +22,6 @@ venv.tar.gz
 # IDEs
 .idea
 .vscode
+
+config
+config.py

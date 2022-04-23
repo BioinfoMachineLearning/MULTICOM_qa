@@ -836,6 +836,18 @@ def get_casp_file(_data, _casp_file):
             f.writelines(str(record[0]) + " " + str(record[-4])[0:5] + " " + str(record[-6]) [0:5]+ "\n")
         f.writelines('END')
 
+def print_final_data_mmalign(_file_name, _file_data, _chain_data):
+    _data_array = []
+
+    file_data = copy.deepcopy(_file_data)
+    data_row = []
+    for values in file_data:
+        temp = file_data.get(values)
+        data_row.append([values,temp.multimer_scoring] )
+    head_row = ["Name","MMalign score"]
+    # head_row = ['Name', 'Monomer_score', 'Dimer_score', 'ICP_score', 'recall_score', 'final_score']
+    report_individual_target(_header_row=head_row, _file_name=_file_name, _data_array=data_row)
+
 
 def print_final_data_new_lite(_file_name, _file_data, _chain_data, _dimer_data):
     _data_array = []
