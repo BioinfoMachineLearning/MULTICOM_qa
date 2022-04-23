@@ -27,15 +27,15 @@ import eva_utils as eva_util
 import pdb_cleaning as pdb_c
 
 
-
-monomer_sequences_dir = "/home/bdmlab/MM_Eva/casp14/H1036/H1036.fasta"
-# # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
-input_dir = "/home/bdmlab/MM_Eva/casp14/test_h1036_stuct/"
-stoichiometry = "A3B3C3"
-CPU_COUNT=10
-# # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
-output_dir = "/home/bdmlab/MM_Eva/casp14/test_h1036/"
-predicted_structures_AF2 = "/home/bdmlab/H1036/H1036_af2/"
+#
+# monomer_sequences_dir = "/home/bdmlab/MM_Eva/casp14/H1036/H1036.fasta"
+# # # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
+# input_dir = "/home/bdmlab/MM_Eva/casp14/test_h1036_stuct/"
+# stoichiometry = "A3B3C3"
+# CPU_COUNT=10
+# # # output_dir = "/home/bdmlab/hetero_test/lite_test/out/"
+# output_dir = "/home/bdmlab/MM_Eva/casp14/test_h1036/"
+# predicted_structures_AF2 = "/home/bdmlab/H1036/H1036_af2/"
 #python multi_eva_modified.py ../data/fasta_casp14/casp_capri_fasta/T1032.fasta /home/rsr3gt/programs/Multi_Eva/Multimet_evatest_samples/predictions/T1032_lite/ A2 /home/rsr3gt/programs/Multi_Eva/data/pdbs_casp_alphafold/T1032/ /home/rsr3gt/programs/Multi_Eva/output/Qs_T1032/
 
 
@@ -48,12 +48,12 @@ predicted_structures_AF2 = "/home/bdmlab/H1036/H1036_af2/"
 # CPU_COUNT=10
 # predicted_structures_AF2 = "/home/bdmlab/H1036/H1036_af2/"
 #
-# monomer_sequences_dir = sys.argv[1]
-# input_dir = sys.argv[2]
-# stoichiometry = sys.argv[3]
-# predicted_structures_AF2 = sys.argv[4]
-# CPU_COUNT = sys.argv[5].strip()
-# output_dir = sys.argv[6]
+monomer_sequences_dir = sys.argv[1]
+input_dir = sys.argv[2]
+stoichiometry = sys.argv[3]
+predicted_structures_AF2 = sys.argv[4]
+CPU_COUNT = sys.argv[5].strip()
+output_dir = sys.argv[6]
 
 if os.path.isfile(monomer_sequences_dir):
     print(str(monomer_sequences_dir) + " Found")
