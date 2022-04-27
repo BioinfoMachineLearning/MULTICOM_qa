@@ -833,7 +833,7 @@ def get_casp_file(_data, _casp_file):
         f.writelines('MODEL 1'+ '\n')
         f.writelines('QMODE 1'+ '\n')
         for record in _data:
-            f.writelines(str(record[0]) + " " + str(record[-4])[0:5] + " " + str(record[-6]) [0:5]+ "\n")
+            f.writelines(str(record[0]) + " " + str(record[-4])[0:7] + " " + str(record[-6]) [0:7]+ "\n")
         f.writelines('END')
 
 def print_final_data_mmalign(_file_name, _file_data, _chain_data):
@@ -909,7 +909,7 @@ def print_final_data_new_lite(_file_name, _file_data, _chain_data, _dimer_data):
     # head_row = ['Name', 'Monomer_score', 'Dimer_score', 'ICP_score', 'recall_score', 'final_score']
     report_individual_target(_header_row=head_row, _file_name=_file_name, _data_array=data_row)
     top_5_arr = sorted(data_row, key=lambda x: x[-1])
-    get_casp_file(_data=top_5_arr[0:5], _casp_file=_file_name)
+    get_casp_file(_data=top_5_arr, _casp_file=_file_name)
 
 
 def print_final_data_new(_file_name, _file_data, _chain_data, _dimer_data):
