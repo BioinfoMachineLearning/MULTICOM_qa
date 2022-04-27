@@ -825,7 +825,7 @@ def get_header_string(_stoic, _dimer):
 
 
 def get_casp_file(_data, _casp_file):
-    with open(os.path.join(_casp_file.replace(".csv", "_top5.txt")), 'w') as f:
+    with open(os.path.join(_casp_file.replace(".csv", "_casp_format.txt")), 'w') as f:
         f.writelines('PFRMAT QA' + '\n')
         f.writelines(f'TARGET {os.path.basename(_casp_file).split(".")[0]}' + '\n')
         f.writelines('AUTHOR MULTICOM_qa' + '\n')
