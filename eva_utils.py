@@ -833,7 +833,8 @@ def get_casp_file(_data, _casp_file):
         f.writelines('MODEL 1'+ '\n')
         f.writelines('QMODE 1'+ '\n')
         for record in _data:
-            f.writelines(str(record[0]) + " " + str(record[-4])[0:7] + " " + str(record[-6]) [0:7]+ "\n")
+            # f.writelines(str(record[0]) + " " + str(record[-4])[0:7] + " " + '{:.6f}'.format(record[-6]) + "\n")
+            f.writelines(str(record[0]) + " " + '{:.4f}'.format(record[-4])  + " " + '{:.6f}'.format(record[-6]) + "\n")
         f.writelines('END')
 
 def print_final_data_mmalign(_file_name, _file_data, _chain_data):
