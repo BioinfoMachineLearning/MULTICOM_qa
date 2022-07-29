@@ -290,6 +290,7 @@ for pdb in pdb_profile_dict:
         dimer_pdb_file_name = dimer_strcutures_dir + "sequence_" + str(chain_concat) + "/" + str(
             pdb) + "_chain_" + dimer + ".pdb"
         if not os.path.exists(dimer_cmap_file_name):
+            print(dimer_cmap_file_name)
             temp_cmaps = eva_util.get_CA_cmaps(_first_chain=monomer_a, _second_chain=monomer_b)
             np.savetxt(dimer_cmap_file_name, temp_cmaps)
         if not os.path.exists(dimer_pdb_file_name):
