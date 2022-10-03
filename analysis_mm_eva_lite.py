@@ -12,15 +12,28 @@ def file_reader(input_dir):
     return contents
 class eva_score:
     name = ''
-    monomer_score = ''
-    ds_score = ''
-    icps_score = ''
-    recall = ''
-    mm_align_score = ''
-    final_score = ''
-    new_final_score = ''
-    new_final_rank=''
-    true_mm_score = ''
+    monomer_score =  0.0
+    ds_score =  0.0
+    icps_score = 0.0
+    recall =  0.0
+    mm_align_score = 0.0
+    final_score = 0.0
+    new_final_score =  0.0
+    new_final_rank= 0.0
+    true_mm_score =  0.0
+
+    def __init__(self):
+        self.name = ''
+        self.monomer_score = 0.0
+        self.ds_score = 0.0
+        self.icps_score = 0.0
+        self.recall =0.0
+        self.mm_align_score = 0.0
+        self.final_score = 0.0
+        self.new_final_score = 0.0
+        self.new_final_rank = 0.0
+        self.true_mm_score = 0.0
+
 
     pass
 
@@ -55,7 +68,8 @@ for _targets in list_of_file:
 
     for values in data_align.iterrows():
         temp = values[1].Target
-        eva_score_list.get(temp).true_mm_score = values[1].MMalign_Score
+        if temp in eva_score_list.keys():
+            eva_score_list.get(temp).true_mm_score = float(values[1].MMalign_Score)
     # eva_score_list = sorted(eva_score_list.items(), key=lambda x: x[1].final,reverse=True)
     true_top_1_name = sorted(eva_score_list.items(), key=lambda x: x[1].true_mm_score, reverse=True)[0]
     true_top_1_score = true_top_1_name[1].true_mm_score

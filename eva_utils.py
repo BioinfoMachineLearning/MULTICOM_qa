@@ -649,8 +649,8 @@ def get_icps_score(_struct_cmap, _pred_cmap, _transpose):
     first_cmap_copy = np.loadtxt(_struct_cmap)
     second_cmap_copy = np.loadtxt(_pred_cmap)
     # second_cmap_copy = np.load(_pred_cmap, allow_pickle=True)
-    if _transpose:
-        first_cmap_copy = np.transpose(first_cmap_copy)
+    # if _transpose:
+    #     first_cmap_copy = np.transpose(first_cmap_copy)
 
     len_a, len_b = second_cmap_copy.shape
     icps_list = []

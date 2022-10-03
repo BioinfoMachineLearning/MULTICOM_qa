@@ -32,8 +32,13 @@ class dockq_profile:
 
 def get_dock_q_score(_true="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS029_1o_chain_AB.pdb",
                      _current="/home/bdmlab/multi_eva_test/T1038/dimer_structures_pdb/T1038TS062_3o_chain_AB.pdb"):
+    print(DOCK_Q_PATH + " " + str(_true) + " " + str(_current) + "-native_chain1 A B")
+    # contents = subprocess.check_output([DOCK_Q_PATH, _true, _current,"-native_chain1" ,"A","B"])
     contents = subprocess.check_output([DOCK_Q_PATH, _true, _current])
-    dock_q_score = 0
+
+    # res = DOCK_Q_PATH+" "+str(_true)+" "+str(_current)+"-native_chain1 A B"
+    # contents = os.system(res)
+    # dock_q_score = 0
     temp = dockq_profile()
     temp.name = os.path.basename(_current)
     for item in contents.decode("utf-8").split("\n"):
@@ -64,10 +69,10 @@ def specific_filename_reader(_input_dir, _extension):
     return file_names
 
 #
-output_dir = "/home/bdmlab/HAF2_dockQ/"
+output_dir = "/home/bdmlab/DockG_dockq_new/"
 MM_ALIGN_PATH = "/home/bdmlab/tools/MMalign"
 # list_of_file ="/home/bdmlab/MM_Eva/casp14/predictions_cleaned/casp_14_oligomers.txt"
-list_of_file ="/home/bdmlab/haf2.list"
+list_of_file ="/home/bdmlab/dock_g_clust_dimer.list"
 
 # output_dir = "/home/bdmlab/BMM55_new_true/"
 # MM_ALIGN_PATH = "/home/bdmlab/tools/MMalign"
@@ -96,6 +101,7 @@ for Title in list_file:
         iRMSm=value[2]
         LRMS=value[3]
         dockq=value[4]
+        print(dockq)
         # score_array.append([str(values), get_MM_score(true_pdb, temp_pdb, MM_ALIGN_PATH)])
         score_array.append([str(values), Fnat,Fnonnat,iRMSm,LRMS,dockq])
 
