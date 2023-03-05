@@ -1,5 +1,5 @@
-# MultimerEva 
-Evaluate the quality of protein multimer structure models
+# MULTICOM_qa 
+Evaluate the quality of protein multimer structure models. It was ranked first in predicting the global accuracy of strucural models of protein multimers/assemblies/complexes in the 15th Critical Assessment of Techniques for Protein Structure Prediction (CASP15) in 2020 (see the SCORE ranking at https://predictioncenter.org/casp15/zscores_EMA.cgi).
 
 # Usage:
 
