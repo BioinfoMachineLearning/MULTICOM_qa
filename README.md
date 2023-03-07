@@ -1,5 +1,5 @@
 # MULTICOM_qa 
-Evaluate the quality of protein multimer structure models. It uses the pairwise similarity between structural models and a deep learning-based interface contact probability score to predict the quality of the models. It was ranked first in predicting the global accuracy of strucural models of protein multimers/assemblies/complexes in the 15th Critical Assessment of Techniques for Protein Structure Prediction (CASP15) in 2022 (see the SCORE ranking at https://predictioncenter.org/casp15/zscores_EMA.cgi).
+Estimate (predict) the quality of protein multimer structure models. It uses the pairwise similarity between structural models and a deep learning-based interface contact probability score to predict the quality of the models. It was ranked first in predicting the global accuracy of strucural models of protein multimers/assemblies/complexes in the 15th Critical Assessment of Techniques for Protein Structure Prediction (CASP15) in 2022 (see the SCORE ranking at https://predictioncenter.org/casp15/zscores_EMA.cgi).
 
 # Usage:
 
