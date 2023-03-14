@@ -12,15 +12,15 @@ def file_reader(input_dir):
     return contents
 class eva_score:
     name = ''
-    monomer_score = ''
-    ds_score = ''
-    icps_score = ''
-    recall = ''
-    mm_align_score = ''
-    final_score = ''
-    new_final_score = ''
-    new_final_rank=''
-    true_mm_score = ''
+    monomer_score = 0
+    ds_score = 0
+    icps_score = 0
+    recall = 0
+    mm_align_score = 0
+    final_score = 0
+    new_final_score = 0
+    new_final_rank=0
+    true_mm_score =0
 
     pass
 
