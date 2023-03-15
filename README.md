@@ -13,7 +13,12 @@ Estimate (predict) the quality of protein multimer structure models. It uses the
 1. Install the required softwares.
 2. Open the ./config file and edit the path of the following variables with the appropiate path:
     1. MM_ALIGN_PATH = "path of the MMalign tools"
-    2. CDPred = "path of the installed glinter directory"
+        
+       e.g.   MM_ALIGN_PATH = "/home/multicom4s_tool/MMalign"
+   
+    2. CDPred = "path of the installed CDPred directory" 
+
+       e.g.   CDPRED_PATH = "/home/multicom4s_tool/CDpred_mm_eva/CDPred/run_CDFold.sh
    
 
 # Usage:
