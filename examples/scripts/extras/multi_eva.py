@@ -23,6 +23,11 @@ import eva_utils as eva_util
 # stoichiometry = "A2"
 # output_dir = "/home/bdmlab/multi_eva_test/"
 
+
+## Caution
+# Sometimes Glinter's env doesn't activate properly. So it is better to activate it before runnning and also if you encounter any error regarding "MKL_SERVICE" then use the command from below before running.
+#
+# export MKL_SERVICE_FORCE_INTEL=1
 # monomer_sequences_dir = "/home/bdmlab/multimer_test/H1036.fasta"
 # # input_dir = "/home/bdmlab/hetero_test/lite_test/concatenated_pdb/"
 # input_dir = "/home/bdmlab/multimer_test/H1036/"
