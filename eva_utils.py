@@ -1102,9 +1102,6 @@ def print_final_data_new(_file_name, _file_data, _chain_data, _dimer_data):
     report_individual_target(_header_row=head_row, _file_name=_file_name, _data_array=data_row)
 
 
-# print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/test/.cmap"))
-# print(get_recall(_struct_cmap="/home/bdmlab/hetero_test/multi/struct_dimer_cmaps/H1045TS285_3_chain_AB.cmap", _pred_cmap="/home/bdmlab/true/.cmap"))
-# GLINTER_DIR ="/home/rsr3gt/anaconda3/envs/multi_eva/"
 def glinter_runner(_first_pdb, _second_pdb, _out_dir, _is_homodimer, expected_cmaps_name, _glinter):
     GLINTER_DIR = _glinter
     envs = GLINTER_DIR + "scripts/set_env.sh"
@@ -1183,16 +1180,14 @@ def check_single_exists(_file):
         return False
 
 
-def check_path_exists(_PARIWISE_QA_SCRIPT, _TM_SCORE_PATH, _Q_SCORE, _DOCK_Q_PATH, _MM_ALIGN, _GLINTER_DIR):
-    print(_PARIWISE_QA_SCRIPT)
-    print(_TM_SCORE_PATH)
-    print(_Q_SCORE)
-    print(_DOCK_Q_PATH)
+def check_path_exists( _MM_ALIGN, _CDPRED_PATH):
+    # print(_PARIWISE_QA_SCRIPT)
+    # print(_TM_SCORE_PATH)
+    # print(_Q_SCORE)
+    # print(_DOCK_Q_PATH)
     print(_MM_ALIGN)
-    print(_GLINTER_DIR)
-    if check_single_exists(_PARIWISE_QA_SCRIPT) and check_single_exists(_TM_SCORE_PATH) and check_single_exists(
-            _Q_SCORE) and check_single_exists(_DOCK_Q_PATH) and check_single_exists(_MM_ALIGN) and check_single_exists(
-        _GLINTER_DIR):
+    print(_CDPRED_PATH)
+    if   check_single_exists(_MM_ALIGN) and check_single_exists(_CDPRED_PATH):
         return True
     else:
         return False
