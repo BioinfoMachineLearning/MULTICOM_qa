@@ -796,7 +796,7 @@ def get_header_string_lite(_stoic, _dimer):
 
     head_string.append("average_ICPS")
 
-    head_string.append("average_MMS")
+    head_string.append("average_PSS")
     head_string.append("Final_score")
     head_string.append("ICPS_Rank")
     head_string.append("MM_Rank")
@@ -821,7 +821,7 @@ def get_header_string(_stoic, _dimer):
     head_string.append("average_DS")
     head_string.append("average_ICPS")
     head_string.append("average_R")
-    head_string.append("average_MMS")
+    head_string.append("average_PSS")
     head_string.append("Final_score")
     return head_string
 

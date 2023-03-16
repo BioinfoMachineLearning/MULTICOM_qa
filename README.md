@@ -20,7 +20,13 @@ Estimate (predict) the quality of protein multimer structure models. It uses the
 3. Pip install -r requirements.txt.
 
 
-4. Open the ./config file and edit the path of the following variables with the appropiate path:
+4. Copy the  file "run_CDFold.sh" inside the CDPred directory
+
+
+5. Download the MMalign 
+
+
+6. Open the "config" file and edit the path of the following variables with the appropiate path:
 
     1. MM_ALIGN_PATH = "path of the MMalign tools"
         
@@ -31,15 +37,31 @@ Estimate (predict) the quality of protein multimer structure models. It uses the
        e.g.   CDPRED_PATH = "/home/multicom4s_tool/CDpred_mm_eva/CDPred/run_CDFold.sh
    
 
-# Usage:
+# Usage
 
 ```python multi_eva_modified_parallel_lite.py <fasta_file in casp format> <dir of the structure for evaluation > <stoichiometry> <dir of the tertiary structures (Alphafold 2  recommended)> <CPU_count > <out put directory>```
 
-```e.g python multi_eva_modified_parallel_lite.py /home/rsr3gt/programs/Multi_Eva/data/fasta_casp14/casp_capri_fasta/H1060.fasta /home/rsr3gt/programs/Multi_Eva/data/predictions_cleaned/H1060/ A6B3C12D6 /home/rsr3gt/programs/Multi_Eva/data/pdbs_casp_alphafold/H1060/ 20 /home/rsr3gt/programs/Multi_Eva/output/example_H1060_beta/```
+```e.g python multi_eva_lite_cdpred.py ./examples/H1143/H1143.fasta ./examples/H1143/decoys/ A1B1 ./examples/H1143/H1143_alphafold_monomer/ 4 ./examples/H1143/output/```
 
-Final output would be a csv file with the final score of all the structures in the output directory, e.g "H1060.csv"
+Final output would be a csv file with the final score of all the structures in the output directory, e.g "H1143.csv". The csv will contain "Final Rank" which is the weighted average of the Interchain Contact Probability Score (ICPS) rank and Pairwise Similarity Score (PSS) RANK.  And will also contain "Final_Score" which is the weighted average of the ICPS and PSS. The expected final output is provided in the expected_output directory.   
 
-Note: the fasta file is expected in CAPRI format check the dir examples for clarification.
+
+
+### Predicted score vs True score
+
+
+
+The predicted result coincides with true one as displayed below. 
+
+| Model  | Final Rank | Final Score | True TM-Score|
+| ------------- | ------------- | ------------- | ------------- |
+|H1143TS035_5 | 1.4  |0.4712|0.95279 |
+|H1143TS035_3 | 1.6  |0.4676|0.8534 |
+|H1143TS035_4 | 3    |0.4227 |0.67712 |
+|H1143TS399_4 | 4  |0.41186 |0.65089 |
+|H1143TS037_3 | 5.4  |0.36549 |0.59259 |
+|H1143TS493_2 | 5.6  |0.36231 |0.5919 |
+
 
 
 # Reference
