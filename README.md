@@ -32,7 +32,7 @@ Final output would be a csv file with the final score of all the structures in t
 Note: the fasta file is expected in CAPRI format check the dir examples for clarification.
 
 
-#Reference
+# Reference
 
 
 [Roy, R. S., Liu, J., Giri, N., Guo, Z., & Cheng, J. (2023). Combining pairwise structural similarity and deep learning interface contact prediction to estimate protein complex model accuracy in CASP15. bioRxiv.](https://doi.org/10.1101/2023.03.08.531814)
