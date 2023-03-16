@@ -8,10 +8,20 @@ Estimate (predict) the quality of protein multimer structure models. It uses the
 2. [MMalign](https://zhanggroup.org/MM-align/)
 3. [Biopython](https://biopython.org/)
 4. [Futures](https://docs.python.org/3/library/concurrent.futures.html)
+5. [Numpy](https://numpy.org/install/)
   
 ## Installation
-1. Install the required softwares.
-2. Open the ./config file and edit the path of the following variables with the appropiate path:
+1. Download and setup the CDPred.
+
+
+2. Activate the  CDPred enviroment.
+
+
+3. Pip install -r requirements.txt.
+
+
+4. Open the ./config file and edit the path of the following variables with the appropiate path:
+
     1. MM_ALIGN_PATH = "path of the MMalign tools"
         
        e.g.   MM_ALIGN_PATH = "/home/multicom4s_tool/MMalign"
