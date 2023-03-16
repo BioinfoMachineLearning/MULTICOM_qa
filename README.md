@@ -4,10 +4,10 @@ Estimate (predict) the quality of protein multimer structure models. It uses the
 
 
 # Requirements:
-1. CDPred (https://github.com/BioinfoMachineLearning/CDPred)
-5. MMalign (https://zhanggroup.org/MM-align/)
-6. Biopython (https://biopython.org/)
-7. Futures (https://docs.python.org/3/library/concurrent.futures.html)
+1. [CDPred](https://github.com/BioinfoMachineLearning/CDPred)
+2. [MMalign](https://zhanggroup.org/MM-align/)
+3. [Biopython](https://biopython.org/)
+4. [Futures](https://docs.python.org/3/library/concurrent.futures.html)
   
 ## Installation
 1. Install the required softwares.
@@ -31,3 +31,8 @@ Final output would be a csv file with the final score of all the structures in t
 
 Note: the fasta file is expected in CAPRI format check the dir examples for clarification.
 
+
+#Reference
+
+
+[Roy, R. S., Liu, J., Giri, N., Guo, Z., & Cheng, J. (2023). Combining pairwise structural similarity and deep learning interface contact prediction to estimate protein complex model accuracy in CASP15. bioRxiv.](https://doi.org/10.1101/2023.03.08.531814)
