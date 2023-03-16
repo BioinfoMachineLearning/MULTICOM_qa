@@ -54,12 +54,12 @@ Final output would be a csv file with the final score of all the structures in t
 The predicted result coincides with true one as displayed below. 
 
 | Model  | Final Rank | Final Score | True TM-Score|
-| ------------- | ------------- | ------------- | ------------- |
-|H1143TS035_5 | 1.4  |0.4712|0.95279 |
+| ------------- | ---: | ---:  | ---:  |
+|H1143TS035_5 | 1.4  |0.4712|0.9528 |
 |H1143TS035_3 | 1.6  |0.4676|0.8534 |
-|H1143TS035_4 | 3    |0.4227 |0.67712 |
-|H1143TS399_4 | 4  |0.41186 |0.65089 |
-|H1143TS037_3 | 5.4  |0.36549 |0.59259 |
+|H1143TS035_4 | 3    |0.4227 |0.6771 |
+|H1143TS399_4 | 4  |0.41186 |0.6509 |
+|H1143TS037_3 | 5.4  |0.36549 |0.5926 |
 |H1143TS493_2 | 5.6  |0.36231 |0.5919 |
 
 
