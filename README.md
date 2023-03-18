@@ -3,6 +3,11 @@ Estimate (predict) the quality of protein multimer structure models. It uses the
 
 
 
+<p align="center">
+  <img alt="not found"  width="60%" height="20%" src="/examples/asset/multicom_qa.png">
+</p>
+
+
 # Requirements:
 1. [CDPred](https://github.com/BioinfoMachineLearning/CDPred)
 2. [MMalign](https://zhanggroup.org/MM-align/)
