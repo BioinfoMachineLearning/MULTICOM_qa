@@ -16,22 +16,27 @@ Estimate (predict) the quality of protein multimer structure models. It uses the
 5. [Numpy](https://numpy.org/install/)
   
 ## Installation
-1. Download and setup the CDPred.
+1. Download Multicom_qa
+    
+    git clone https://github.com/BioinfoMachineLearning/MULTICOM_qa.git
 
 
-2. Activate the  CDPred enviroment.
+2. Download and setup the CDPred.
 
 
-3. Pip install -r requirements.txt.
+3. Activate the  CDPred enviroment.
 
 
-4. Copy the  file "run_CDFold.sh" inside the CDPred directory
+4. Pip install -r requirements.txt.
 
 
-5. Download the MMalign 
+5. Copy the  file "run_CDFold.sh" inside the CDPred directory
 
 
-6. Open the "config" file and edit the path of the following variables with the appropiate path:
+6. Download the MMalign 
+
+
+7. Open the "config" file and edit the path of the following variables with the appropiate path:
 
     1. MM_ALIGN_PATH = "path of the MMalign tools"
         
@@ -44,9 +49,9 @@ Estimate (predict) the quality of protein multimer structure models. It uses the
 
 # Usage
 
-```python multi_eva_modified_parallel_lite.py <fasta_file in casp format> <dir of the structure for evaluation > <stoichiometry> <dir of the tertiary structures (Alphafold 2  recommended)> <CPU_count > <out put directory>```
+```python multi_eva.py <fasta_file in casp format> <dir of the structure for evaluation > <stoichiometry> <dir of the tertiary structures (Alphafold 2  recommended)> <CPU_count > <out put directory>```
 
-```e.g python multi_eva_lite_cdpred.py ./examples/H1143/H1143.fasta ./examples/H1143/decoys/ A1B1 ./examples/H1143/H1143_alphafold_monomer/ 4 ./examples/H1143/output/```
+```e.g python multi_eva.py ./examples/H1143/H1143.fasta ./examples/H1143/decoys/ A1B1 ./examples/H1143/H1143_alphafold_monomer/ 4 ./examples/H1143/output/```
 
 Final output would be a csv file with the final score of all the structures in the output directory, e.g "H1143.csv". The csv will contain "Final Rank" which is the weighted average of the Interchain Contact Probability Score (ICPS) rank and Pairwise Similarity Score (PSS) RANK.  And will also contain "Final_Score" which is the weighted average of the ICPS and PSS. The expected final output is provided in the expected_output directory.   
 
