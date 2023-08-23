@@ -1,0 +1,149 @@
+movie record
+color all white
+roll y 1 1080
+color #1 #fa8072
+color #2 #add8e6
+wait 20
+color #2 white
+color #3 #9370db
+wait 20
+color #3 white
+color #4 #32cd32
+wait 20
+color #4 white
+color #5 #ffc0cb
+wait 20
+color #5 white
+color #6 #40e0d0
+wait 20
+color #6 white
+color #1 white
+color #2 #add8e6
+color #1 #fa8072
+wait 20
+color #1 white
+color #3 #9370db
+wait 20
+color #3 white
+color #4 #32cd32
+wait 20
+color #4 white
+color #5 #ffc0cb
+wait 20
+color #5 white
+color #6 #40e0d0
+wait 20
+color #6 white
+color #2 white
+color #3 #9370db
+color #1 #fa8072
+wait 20
+color #1 white
+color #2 #add8e6
+wait 20
+color #2 white
+color #4 #32cd32
+wait 20
+color #4 white
+color #5 #ffc0cb
+wait 20
+color #5 white
+color #6 #40e0d0
+wait 20
+color #6 white
+color #3 white
+color #4 #32cd32
+color #1 #fa8072
+wait 20
+color #1 white
+color #2 #add8e6
+wait 20
+color #2 white
+color #3 #9370db
+wait 20
+color #3 white
+color #5 #ffc0cb
+wait 20
+color #5 white
+color #6 #40e0d0
+color #6 white
+color #4 white
+color #5 #ffc0cb
+color #1 #fa8072
+wait 20
+color #1 white
+color #2 #add8e6
+wait 20
+color #2 white
+color #3 #9370db
+wait 20
+color #3 white
+color #4 #32cd32
+wait 20
+color #4 white
+color #6 #40e0d0
+wait 20
+color #6 white
+color #5 white
+color #6 #40e0d0
+color #1 #fa8072
+wait 20
+color #1 white
+color #2 #add8e6
+wait 20
+color #2 white
+color #3 #9370db
+wait 20
+color #3 white
+color #4 #32cd32
+wait 20
+color #4 white
+color #5 #ffc0cb
+wait 20
+color #5 white
+color #6 white
+wait 10
+color all white
+color #1/A red
+color #1/B blue
+wait 20
+color all white
+wait 2
+color #2/A red
+color #2/B blue
+wait 20
+color all white
+wait 2
+color #3/A red
+color #3/B blue
+wait 20
+color all white
+wait 2
+color #4/A red
+color #4/B blue
+wait 20
+color all white
+wait 2
+color #5/A red
+color #5/B blue
+wait 20
+color all white
+wait 2
+color #6/A red
+color #6/B blue
+wait 20
+color all white
+color #3 red
+hide #1 models
+wait 5
+hide #2 models
+wait 5
+hide #4 models
+wait 5
+hide #5 models
+wait 5
+hide #6 models
+wait 5
+view p4
+wait 120
+movie encode

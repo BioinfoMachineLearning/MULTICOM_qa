@@ -4,7 +4,7 @@ Estimate (predict) the quality of protein multimer structure models. It uses the
 
 
 <p align="center">
-  <img alt="not found"  width="60%" height="20%" src="/examples/asset/multicom_qa.gif">
+  <img alt="not found"  width="60%" height="20%" src="/examples/asset/mqa.gif">
 </p>
 
 
